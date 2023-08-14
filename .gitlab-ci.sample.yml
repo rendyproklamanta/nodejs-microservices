@@ -1,0 +1,32 @@
+variables:
+   CONTAINER_NAME: app_user
+   SERVICE_NAME: user
+   DOCKERCOMPOSE_NAME: services/users/docker-compose.yml
+   DOCKERFILE_NAME: Dockerfile.user
+
+stages:
+   - deploy_$SERVICE_NAME
+   - rollout_$SERVICE_NAME
+
+deploy:
+   stage: deploy_$SERVICE_NAME
+   image: docker
+   services:
+      - name: docker:dind
+   script:
+      - docker --version
+      - sudo docker build -t $CONTAINER_NAME:latest -f $DOCKERFILE_NAME .
+      - sudo docker-compose -f $DOCKERCOMPOSE_NAME up --force-recreate -d
+      - sudo docker logs $(sudo docker ps -aq --filter name=$CONTAINER_NAME)
+   after_script:
+      - sudo docker system prune --volumes --all --force
+
+rollout:
+   stage: rollout_$SERVICE_NAME
+   variables:
+      GIT_STRATEGY: none
+   script:
+      - sudo mkdir -p /root/.docker/cli-plugins
+      - sudo curl https://raw.githubusercontent.com/wowu/docker-rollout/master/docker-rollout -o /root/.docker/cli-plugins/docker-rollout
+      - sudo chmod +x /root/.docker/cli-plugins/docker-rollout
+      - sudo docker rollout $DOCKER_NAME

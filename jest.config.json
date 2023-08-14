@@ -1,0 +1,7 @@
+{
+   "moduleNameMapper": {
+      "@root/(.*)": "<rootDir>/$1",
+      "@services/(.*)": "<rootDir>/services/$1",
+      "@config/(.*)": "<rootDir>/config/$1"
+   }
+}

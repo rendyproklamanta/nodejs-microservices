@@ -1,0 +1,26 @@
+FROM node:16-alpine
+
+RUN mkdir -p /app && chown -R node:node /app
+
+ENV PATH /app/node_modules/.bin:$PATH
+
+WORKDIR /app
+
+COPY .env .env
+COPY package.json package.json
+COPY index.js index.js
+COPY ./config ./config
+COPY ./services/auths/middlewares/auth.middleware.js ./services/auths/middlewares/auth.middleware.js
+
+COPY ./services/users ./services/users
+COPY ./services/users/route.js ./route.js
+RUN rm -rf ./services/users/route.js
+
+RUN yarn install
+
+EXPOSE 5000
+
+CMD ["node", "index.js"]
+
+# docker build -t user_service:latest -f Dockerfile.user .
+# docker run -p 5002:5000 user_service

@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+      
+  auth_service:
+    image: "auth_service"
+    restart: "always"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.rule=Host(`auth.domain.com`)"
+      - "traefik.http.routers.auth.entrypoints=web"
+      - "traefik.http.routers.auth.entrypoints=websecure"
+      - "traefik.http.routers.auth.tls=true"
+      - "traefik.http.routers.auth.tls.certresolver=letsencrypt"
+    networks:
+      - "traefik-public"
+
+networks:
+  traefik-public:
+    external: true

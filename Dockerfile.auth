@@ -1,0 +1,26 @@
+FROM node:16-alpine
+
+RUN mkdir -p /app && chown -R node:node /app
+
+ENV PATH /app/node_modules/.bin:$PATH
+
+WORKDIR /app
+
+COPY .env .env
+COPY package.json package.json
+COPY index.js index.js
+COPY ./config ./config
+
+COPY ./services/users/models ./services/users/models
+COPY ./services/auths ./services/auths
+COPY ./services/auths/route.js ./route.js
+RUN rm -rf ./services/auths/route.js
+
+RUN yarn install
+
+EXPOSE 5000
+
+CMD ["node", "index.js"]
+
+# docker build -t auth_service:latest -f Dockerfile.auth .
+# docker run -p 5001:5000 auth_service
