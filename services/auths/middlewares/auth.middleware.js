@@ -7,7 +7,7 @@ const UserModel = require('@services/users/models/user.model');
 // ! ==========================================
 // ! Middleware
 // ! ==========================================
-const signInToken = (user) => {
+const signInToken = (user, expiresIn) => {
    return jwt.sign(
       {
          _id: user._id,
@@ -20,9 +20,41 @@ const signInToken = (user) => {
       process.env.JWT_SECRET,
       {
          // expiresIn: '365d',
-         expiresIn: '5m',
+         expiresIn: expiresIn ?? '1m',
       }
    );
+};
+
+// ! ==========================================
+// ! Middleware
+// ! ==========================================
+const refreshToken = async (req, res, next) => { // eslint-disable-line no-unused-vars
+   try {
+      const refreshToken = req.cookies.refreshToken;
+
+      if (!refreshToken) {
+         return res.status(401).send({
+            status: false,
+            message: 'Access Denied. No refresh token provided.'
+         });
+      }
+
+      const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+      const accessToken = signInToken(decoded);
+
+      // res.header('Authorization', accessToken).send(decoded.user);
+      return res.status(200).send({
+         success: true,
+         data: {
+            accessToken,
+         }
+      });
+   } catch (error) {
+      return res.status(401).send({
+         status: false,
+         message: error
+      });
+   }
 };
 
 // ! ==========================================
@@ -51,13 +83,13 @@ const isAuth = async (req, res, next) => {
       if (result.success) {
          next();
       } else {
-         return res.status(401).json({
+         return res.status(401).send({
             success: false,
             message: result.message,
          });
       }
    } catch (err) {
-      return res.status(401).json({
+      return res.status(401).send({
          success: false,
          message: 'You are not logged in',
       });
@@ -146,7 +178,7 @@ const isAuthWithPermission = (access) => {
    return async (req, res, next) => {
 
       if (!access) {
-         return res.status(401).json({ success: false, message: "No roles access defined" });
+         return res.status(401).send({ success: false, message: "No roles access defined" });
       }
 
       const result = await decodedToken(req, res);
@@ -162,13 +194,13 @@ const isAuthWithPermission = (access) => {
          if (hasAccess) {
             next(); // role is allowed, so continue on the next middleware
          } else {
-            return res.status(401).json({
+            return res.status(401).send({
                success: false,
                message: "You don't have permission!"
             });
          }
       } else {
-         return res.status(401).json({
+         return res.status(401).send({
             success: false,
             message: result.message,
          });
@@ -179,7 +211,7 @@ const isAuthWithPermission = (access) => {
 const isAuthWithRoles = (...permittedRoles) => {
    return async (req, res, next) => {
 
-      if (permittedRoles.length === 0) res.status(401).json({ message: "You have no roles access" });
+      if (permittedRoles.length === 0) res.status(401).send({ message: "You have no roles access" });
 
       const token = await isAuth(req, res);
       //console.log("🚀 ~ file: auth.js:136 ~ return ~ token:", token);
@@ -200,7 +232,7 @@ const isAuthWithRoles = (...permittedRoles) => {
       if (hasAccess && permittedRoles.includes(token.role)) {
          next(); // role is allowed, so continue on the next middleware
       } else {
-         res.status(401).json({ message: "You have no right access!" });
+         res.status(401).send({ message: "You have no right access!" });
       }
 
    };
@@ -252,6 +284,7 @@ const sendEmail = (body, res, message) => {
 
 module.exports = {
    signInToken,
+   refreshToken,
    tokenForVerify,
    decodedToken,
    isAuth,

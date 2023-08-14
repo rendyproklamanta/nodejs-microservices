@@ -1,33 +1,52 @@
-##Nodejs Based Microservices
-- Using docker
-- Seperate directory services for runing each docker service
+## Nodejs Based Microservices
+- Using docker : Seperate directory services for runing each docker service
+- Using Traefik for domain proxy, ex : auth.domain.com, user.domain.com
 
-##Tech and Packages we use in this project:
+## Tech and Packages we use in this project:
 
-- Node.js framework Express.js.
-- Mongodb use for database .
-- Mongoose for all schema validation and database connection.
-- JsonwebToken for create jsonwebtoken.
-- BcryptJs for password encryption.
-- Day.js for data format.
-- Dotenv for use environment variable.
-- Nodemon for run on dev server.
+- Framework Express.js.
+- Mongodb : use for database .
+- Mongoose : for all schema validation and database connection.
+- JsonwebToken : for create jsonwebtoken.
+- BcryptJs : for password encryption.
+- Day.js : for data format.
+- Nodemon : for run on dev server.
 - Cors and Body parser
-- morgan http logger
+- morgan : http logger
 - express validator
+- yup : validator
+- jest : for unit testing
+- module-alias : import alias @
+- pm2 : for deployed to VM
 
-###Step 1 : Configure your .env file:
+## Install and run on Docker as Microservice
 
-Within the project directory you'll find a .env.example file just rename it as .env and paste your Mongo_Uri and JWT_SECRET.
-
-###Step 2 : Running the project:
-
+- Auth Service <sup>*mandatory</sup>
+@ login, logout, forgot
 ```
--- Import data to mongodb --
-⦁ yarn data:import
-
--- Install dep and run --
-⦁ yarn install
-⦁ yarn dev
-⦁ ngrok http 3000
+docker build -t auth_service:latest -f Dockerfile.auth .
+docker run -p 5001:5000 auth_service
 ```
+=> http://localhost:5001
+
+
+- User Service
+@ manage user : CRUD
+```
+docker build -t user_service:latest -f Dockerfile.user .
+docker run -p 5002:5000 user_service
+```
+=> http://localhost:5002
+
+## Install and run on VM or local PC
+```
+yarn install
+yarn dev
+```
+=> http://localhost:5000
+
+- Running via ngrok proxy : 
+```
+ngrok http 5000
+```
+=> http://xyz.ngrok.io:5000

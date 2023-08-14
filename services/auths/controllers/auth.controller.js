@@ -1,8 +1,8 @@
 require('dotenv').config();
+const UserModel = require('@services/users/models/user.model');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { signInToken, tokenForVerify, sendEmail, decodedToken } = require('../middlewares/auth.middleware');
-const User = require('../../users/models/user.model');
 
 // ! ==========================================
 // ! Controller
@@ -11,7 +11,8 @@ const login = async (req, res) => {
    try {
       const role = req.body.role;
       const username = req.body.username;
-      const data = await User.findOne({ username: username });
+      const rememberme = req.body.rememberme;
+      const data = await UserModel.findOne({ username: username });
       const password = data?.password;
 
       if (!data && !password) {
@@ -30,13 +31,13 @@ const login = async (req, res) => {
 
       if (bcrypt.compareSync(req.body.password, password)) {
          const token = signInToken(data);
-
-         // res.cookie("token", token, {
-         //    maxAge: 2147483647,
-         //    httpOnly: true,
-         //    sameSite: true,
-         //    secure: false
-         // });
+         const refreshToken = signInToken(data, rememberme ? '30d' : '1d');
+         res.cookie("refreshToken", refreshToken, {
+            maxAge: rememberme ? 2592000000 : 86400000, // 30d || 1d
+            httpOnly: true,
+            sameSite: true,
+            secure: false
+         });
 
          return res.status(200).send({
             success: true,
@@ -68,11 +69,19 @@ const login = async (req, res) => {
 // ! Controller
 // ! ==========================================
 const logout = (req, res) => {
-   res.clearCookie("token");
-   return res.json({
-      success: true,
-      message: "User signed out",
-   });
+   const refreshToken = req.cookies.refreshToken;
+   if (refreshToken) {
+      res.clearCookie("refreshToken");
+      return res.send({
+         success: true,
+         message: "User signed out",
+      });
+   } else {
+      return res.status(500).send({
+         success: false,
+         message: "Already signed out",
+      });
+   }
 };
 
 // ! ==========================================
@@ -82,18 +91,18 @@ const tokenData = async (req, res, next) => { // eslint-disable-line no-unused-v
    try {
       const decoded = await decodedToken(req, res);
       if (decoded) {
-         return res.json({
+         return res.send({
             success: true,
             data: decoded.data,
          });
       } else {
-         return res.status(401).json({
+         return res.status(401).send({
             success: false,
             message: decoded.message,
          });
       }
    } catch (err) {
-      return res.status(401).json({
+      return res.status(401).send({
          success: false,
          message: 'You are not logged in',
       });
@@ -104,7 +113,7 @@ const tokenData = async (req, res, next) => { // eslint-disable-line no-unused-v
 // ! Controller
 // ! ==========================================
 const verifyEmailAddress = async (req, res) => {
-   const isAdded = await User.findOne({ email: req.body.email });
+   const isAdded = await UserModel.findOne({ email: req.body.email });
    if (isAdded) {
       return res.status(403).send({
          success: true,
@@ -138,7 +147,7 @@ const verifyEmailAddress = async (req, res) => {
 // ! Controller
 // ! ==========================================
 const forgetPassword = async (req, res) => {
-   const isExist = await User.findOne({ email: req.body.email });
+   const isExist = await UserModel.findOne({ email: req.body.email });
    if (!isExist) {
       return res.status(404).send({
          success: false,
@@ -172,7 +181,7 @@ const forgetPassword = async (req, res) => {
 const resetPassword = async (req, res) => {
    const token = req.body.token;
    const { email } = jwt.decode(token);
-   const user = await User.findOne({ email: email });
+   const user = await UserModel.findOne({ email: email });
 
    if (token) {
       jwt.verify(token, process.env.JWT_SECRET_FOR_VERIFY, (err, decoded) => { // eslint-disable-line no-unused-vars
@@ -198,7 +207,7 @@ const resetPassword = async (req, res) => {
 // ! ==========================================
 const changePassword = async (req, res) => {
    try {
-      const user = await User.findOne({ email: req.body.email });
+      const user = await UserModel.findOne({ email: req.body.email });
       if (!user.password) {
          return res.send({
             success: true,
@@ -233,7 +242,7 @@ const changePassword = async (req, res) => {
 // ! ==========================================
 const signUpWithProvider = async (req, res) => {
    try {
-      const isAdded = await User.findOne({ email: req.body.email });
+      const isAdded = await UserModel.findOne({ email: req.body.email });
       if (isAdded) {
          const token = signInToken(isAdded);
          return res.send({
@@ -249,7 +258,7 @@ const signUpWithProvider = async (req, res) => {
             }
          });
       } else {
-         const newUser = new User({
+         const newUser = new UserModel({
             name: req.body.name,
             email: req.body.email,
             image: req.body.image,

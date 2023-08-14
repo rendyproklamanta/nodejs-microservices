@@ -11,7 +11,7 @@ const {
 } = require('@services/auths/controllers/auth.controller');
 
 const { passwordVerificationLimit, emailVerificationLimit } = require('@config/others');
-const { isAuth } = require('@services/auths/middlewares/auth.middleware');
+const { isAuth, refreshToken } = require('@services/auths/middlewares/auth.middleware');
 const { authCreateSchema } = require('@services/auths/middlewares/auth.validator');
 const { validate } = require('@config/validate');
 
@@ -41,14 +41,19 @@ router.put(`${ENDPOINT}/reset-password`, resetPassword);
 router.post(`${ENDPOINT}/change-password`, changePassword);
 
 //get
-router.get(`${ENDPOINT}/checktoken`,
+router.get(`${ENDPOINT}/token-check`,
    isAuth, // middleware
 );
 
 //get
-router.get(`${ENDPOINT}/tokendata`,
+router.get(`${ENDPOINT}/token-data`,
    isAuth, // middleware
    tokenData,
+);
+
+//get
+router.get(`${ENDPOINT}/token-refresh`,
+   refreshToken,
 );
 
 module.exports = router;
