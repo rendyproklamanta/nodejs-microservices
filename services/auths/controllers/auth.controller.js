@@ -3,6 +3,46 @@ const UserModel = require('@services/users/models/user.model');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { signInToken, tokenForVerify, sendEmail, decodedToken } = require('../middlewares/auth.middleware');
+const amqp = require("amqplib");
+const { MQ_USER_TEST_RES, MQ_USER_TEST_REQ } = require('@config/constants');
+
+let channel, connection;
+async function connect() {
+   try {
+      const amqpServer = process.env.AMQP_SERVER;
+      connection = await amqp.connect(amqpServer);
+      channel = await connection.createChannel();
+      await channel.assertQueue(MQ_USER_TEST_REQ);
+      await channel.assertQueue(MQ_USER_TEST_RES);
+   } catch (err) {
+      console.log("🚀 ~ file: auth.controller.js:18 ~ connect ~ err:", err);
+   }
+}
+connect();
+
+const testMQ = async (req, res) => {
+   try {
+      const request = {
+         request: 'test',
+      };
+
+      await channel.sendToQueue(
+         MQ_USER_TEST_REQ,
+         Buffer.from(JSON.stringify(request))
+      );
+
+      await channel.consume(MQ_USER_TEST_RES, result => {
+         const data = JSON.parse(result.content);
+         console.log("🚀 ~ file: auth.controller.js:36 ~ testMQ ~ data:", data);
+      });
+
+      res.json({ status: true });
+
+   } catch (error) {
+      console.log("🚀 ~ file: auth.controller.js:46 ~ testing ~ error:", error);
+   }
+};
+
 
 // ! ==========================================
 // ! Controller
@@ -286,6 +326,7 @@ const signUpWithProvider = async (req, res) => {
 };
 
 module.exports = {
+   testMQ,
    login,
    logout,
    tokenData,

@@ -2,7 +2,37 @@ const bcrypt = require('bcryptjs');
 const { signInToken } = require('../../auths/middlewares/auth.middleware');
 const UserModel = require('../models/user.model');
 const { roleUser } = require('../../../config/permission');
+const amqp = require("amqplib");
+const { MQ_USER_TEST_REQ, MQ_USER_TEST_RES } = require('@config/constants');
 
+let channel, connection;
+async function connect() {
+   try {
+      const amqpServer = process.env.AMQP_SERVER;
+      connection = await amqp.connect(amqpServer);
+      channel = await connection.createChannel();
+      await channel.assertQueue(MQ_USER_TEST_REQ);
+      await channel.assertQueue(MQ_USER_TEST_RES);
+      channel.consume(MQ_USER_TEST_REQ, req => {
+         channel.ack(req);
+         setUserMQ(JSON.parse(req.content));
+      });
+   } catch (err) {
+      console.error(err);
+   }
+}
+connect();
+
+const setUserMQ = async (result) => {
+   console.log("🚀 ~ file: user.controller.js:27 ~ MQ_USER_TEST_REQ ~ data:", result);
+   const data = {
+      response: 'okes',
+   };
+   await channel.sendToQueue(
+      MQ_USER_TEST_RES,
+      Buffer.from(JSON.stringify(data))
+   );
+};
 
 // ! ==========================================
 // ! Controller

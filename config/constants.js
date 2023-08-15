@@ -1,4 +1,10 @@
 module.exports = Object.freeze({
    ADMIN: 'admin',
    USER: 'user',
+
+   // RabbitMQ
+   MQ_USER_TEST_REQ: 'MQ_USER_TEST_REQ',
+   MQ_USER_TEST_RES: 'MQ_USER_TEST_RES',
+   MQ_AUTH_PERMISSION: 'MQ_AUTH_PERMISSION',
+   MQ_AUTH_PERMISSION_RES: 'MQ_AUTH_PERMISSION_RES',
 });

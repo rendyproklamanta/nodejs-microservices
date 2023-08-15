@@ -8,6 +8,7 @@ const {
    changePassword,
    resetPassword,
    tokenData,
+   testMQ,
 } = require('@services/auths/controllers/auth.controller');
 
 const { passwordVerificationLimit, emailVerificationLimit } = require('@config/others');
@@ -29,7 +30,7 @@ router.get(`/`, (req, res) => {
 });
 
 //verify email
-router.post(`${ENDPOINT}/verify-email`, emailVerificationLimit, verifyEmailAddress);
+router.post(`${ENDPOINT}/vemail/erify`, emailVerificationLimit, verifyEmailAddress);
 
 //login a user
 router.post(`${ENDPOINT}/login`, validate(authCreateSchema), login);
@@ -38,28 +39,34 @@ router.post(`${ENDPOINT}/login`, validate(authCreateSchema), login);
 router.get(`${ENDPOINT}/logout`, logout);
 
 //forget-password
-router.put(`${ENDPOINT}/forget-password`, passwordVerificationLimit, forgetPassword);
+router.put(`${ENDPOINT}/password/forget`, passwordVerificationLimit, forgetPassword);
 
 //reset-password
-router.put(`${ENDPOINT}/reset-password`, resetPassword);
+router.put(`${ENDPOINT}/password/reset`, resetPassword);
 
 //change password
-router.post(`${ENDPOINT}/change-password`, changePassword);
+router.post(`${ENDPOINT}/password/change`, changePassword);
 
 //get
-router.get(`${ENDPOINT}/token-check`,
+router.get(`${ENDPOINT}/token/check`,
    isAuth, // middleware
 );
 
 //get
-router.get(`${ENDPOINT}/token-data`,
+router.get(`${ENDPOINT}/token/data`,
    isAuth, // middleware
    tokenData,
 );
 
 //get
-router.get(`${ENDPOINT}/token-refresh`,
+router.get(`${ENDPOINT}/token/refresh`,
    refreshToken,
 );
+
+//get
+router.get(`${ENDPOINT}/test/mq`,
+   testMQ,
+);
+
 
 module.exports = router;
