@@ -1,7 +1,7 @@
 const request = require("supertest");
 const express = require("express");
 const app = express();
-const index = require("@root/index");
+const index = require("@root/index.gateway");
 
 app.use('/', index);
 

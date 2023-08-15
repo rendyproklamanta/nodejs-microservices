@@ -7,10 +7,14 @@ ENV PATH /app/node_modules/.bin:$PATH
 WORKDIR /app
 
 COPY .env .env
-COPY package.json package.json
-COPY index.js index.js
 COPY ./config ./config
+COPY ./test ./test
 COPY ./services/auths/middlewares/auth.middleware.js ./services/auths/middlewares/auth.middleware.js
+COPY jsconfig.json jsconfig.json
+COPY jest.config.json jest.config.json
+COPY package.json package.json
+COPY yarn.lock yarn.lock
+COPY index.micro.js index.micro.js
 
 COPY ./services/users ./services/users
 COPY ./services/users/route.js ./route.js
@@ -20,7 +24,8 @@ RUN yarn install
 
 EXPOSE 5000
 
-CMD ["node", "index.js"]
+RUN yarn test test/healthcheck.micro.test.js
+CMD ["node", "index.micro.js"]
 
 # docker build -t user_service:latest -f Dockerfile.user .
 # docker run -p 5002:5000 user_service

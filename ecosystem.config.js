@@ -1,7 +1,7 @@
 module.exports = {
    apps: [{
       name: "api",
-      script: "index.dev.js",
+      script: "index.mono.js",
       instances: 2,
       exec_mode: "cluster",
       env: {

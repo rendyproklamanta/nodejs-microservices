@@ -5,6 +5,7 @@
 ## Tech and Packages we use in this project:
 
 - Framework Express.js.
+- http-proxy-middleware : API gateway
 - Mongodb : use for database .
 - Mongoose : for all schema validation and database connection.
 - JsonwebToken : for create jsonwebtoken.
@@ -21,7 +22,15 @@
 
 ## Install and run on Docker as Microservice
 
-- Auth Service <sup>*mandatory</sup>
+- Gateway Service <sup>*mandatory</sup>
+```
+docker build -t gateway_service:latest -f Dockerfile.gateway .
+docker run -p 5000:5000 gateway_service
+```
+=> http://localhost:5000
+<hr>
+
+- Auth Service
 @ login, logout, forgot
 ```
 docker build -t auth_service:latest -f Dockerfile.auth .
@@ -29,7 +38,7 @@ docker run -p 5001:5000 auth_service
 ```
 => http://localhost:5001
 
-
+<hr>
 - User Service
 @ manage user : CRUD
 ```

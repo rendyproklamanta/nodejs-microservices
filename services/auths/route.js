@@ -18,8 +18,14 @@ const { validate } = require('@config/validate');
 const ENDPOINT = '/api/auths';
 
 //root route
+const defaultRes = (res) => {
+   return res.status(200).send('Auth Service is Running!');
+};
 router.get(`${ENDPOINT}`, (req, res) => {
-   res.status(200).send('Auth Service is Running!');
+   return defaultRes(res);
+});
+router.get(`/`, (req, res) => {
+   return defaultRes(res);
 });
 
 //verify email

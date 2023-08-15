@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+
+  gateway_service:
+    #image: 'gateway_service'
+    build:
+      dockerfile: Dockerfile
+      context: .
+    restart: "always"
+    command: 'nodemon index.js'
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./:/app
+      - /app/node_modules

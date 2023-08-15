@@ -1,20 +1,9 @@
 version: "3.8"
 
 services:
-      
+
   user_service:
     image: "user_service"
     restart: "always"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.user.rule=Host(`user.domain.com`)"
-      - "traefik.http.routers.user.entrypoints=web"
-      - "traefik.http.routers.user.entrypoints=websecure"
-      - "traefik.http.routers.user.tls=true"
-      - "traefik.http.routers.user.tls.certresolver=letsencrypt"
-    networks:
-      - "traefik-public"
-
-networks:
-  traefik-public:
-    external: true
+    ports:
+      - "5002:5000"

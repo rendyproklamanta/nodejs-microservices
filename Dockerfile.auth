@@ -7,9 +7,13 @@ ENV PATH /app/node_modules/.bin:$PATH
 WORKDIR /app
 
 COPY .env .env
-COPY package.json package.json
-COPY index.js index.js
 COPY ./config ./config
+COPY ./test ./test
+COPY package.json package.json
+COPY yarn.lock yarn.lock
+COPY jsconfig.json jsconfig.json
+COPY jest.config.json jest.config.json
+COPY index.micro.js index.micro.js
 
 COPY ./services/users/models ./services/users/models
 COPY ./services/auths ./services/auths
@@ -20,7 +24,8 @@ RUN yarn install
 
 EXPOSE 5000
 
-CMD ["node", "index.js"]
+RUN yarn test test/healthcheck.micro.test.js
+CMD ["node", "index.micro.js"]
 
 # docker build -t auth_service:latest -f Dockerfile.auth .
 # docker run -p 5001:5000 auth_service

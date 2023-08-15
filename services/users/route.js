@@ -15,8 +15,14 @@ const { userCreateSchema, userUpdateSchema, userParamsIdSchema } = require('@ser
 const ENDPOINT = '/api/users';
 
 //root route
+const defaultRes = (res) => {
+   return res.status(200).send('User Service is Running!');
+};
 router.get(`${ENDPOINT}`, (req, res) => {
-   res.status(200).send('User Service is Running!');
+   return defaultRes(res);
+});
+router.get(`/`, (req, res) => {
+   return defaultRes(res);
 });
 
 //create

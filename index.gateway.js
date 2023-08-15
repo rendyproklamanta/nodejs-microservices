@@ -2,13 +2,14 @@ require('module-alias/register');
 const expressMiddleware = require("@config/expressMiddleware");
 const routes = require('@config/routes');
 const express = require("express");
+const { createProxyMiddleware } = require("http-proxy-middleware");
 const app = express();
 
 // Express Middleware
 expressMiddleware(app, express);
 
 app.get('/', (req, res) => {
-   res.send('API service is running');
+   res.send('Gateway service is running');
 });
 
 app.get('/healthcheck', (req, res) => {
@@ -16,7 +17,7 @@ app.get('/healthcheck', (req, res) => {
 });
 
 routes.forEach(route => {
-   app.use(require(route.service));
+   app.use(createProxyMiddleware(route.proxy));
 });
 
 module.exports = app;
