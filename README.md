@@ -28,6 +28,7 @@ docker build -t gateway_service:latest -f Dockerfile.gateway .
 docker run -p 5000:5000 gateway_service
 ```
 => http://localhost:5000
+
 <hr>
 
 - Auth Service
@@ -39,8 +40,9 @@ docker run -p 5001:5000 auth_service
 => http://localhost:5001
 
 <hr>
+
 - User Service
-@ manage user : CRUD
+@ manage user  CRUD
 ```
 docker build -t user_service:latest -f Dockerfile.user .
 docker run -p 5002:5000 user_service
