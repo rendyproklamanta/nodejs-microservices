@@ -3,36 +3,90 @@ const { signInToken } = require('../../auths/middlewares/auth.middleware');
 const UserModel = require('../models/user.model');
 const { roleUser } = require('../../../config/permission');
 const amqp = require("amqplib");
-const { MQ_USER_TEST_REQ, MQ_USER_TEST_RES } = require('@config/constants');
+const { sendMessage } = require('@config/broker');
 
 let channel, connection;
-async function connect() {
-   try {
-      const amqpServer = process.env.AMQP_SERVER;
-      connection = await amqp.connect(amqpServer);
-      channel = await connection.createChannel();
-      await channel.assertQueue(MQ_USER_TEST_REQ);
-      await channel.assertQueue(MQ_USER_TEST_RES);
-      channel.consume(MQ_USER_TEST_REQ, req => {
-         channel.ack(req);
-         setUserMQ(JSON.parse(req.content));
-      });
-   } catch (err) {
-      console.error(err);
-   }
-}
-connect();
 
-const setUserMQ = async (result) => {
-   console.log("🚀 ~ file: user.controller.js:27 ~ MQ_USER_TEST_REQ ~ data:", result);
-   const data = {
-      response: 'okes',
-   };
-   await channel.sendToQueue(
-      MQ_USER_TEST_RES,
-      Buffer.from(JSON.stringify(data))
-   );
+(async () => {
+   try {
+      connection = await amqp.connect(process.env.AMQP_SERVER);
+      channel = await connection.createChannel();
+
+      await channel.assertQueue('USER_CREATE_MSG');
+      await channel.consume(
+         'USER_CREATE_MSG',
+         (msg) => {
+            if (msg) {
+               const data = JSON.parse(msg.content);
+               console.log("[=>>] Receive USER_CREATE_MSG :", data);
+               createUserMsg(data);
+               channel.ack(msg);
+            }
+         },
+      );
+
+      console.log("[ User Service ] Waiting for messages broker...");
+   } catch (err) {
+      console.log("🚀 ~ file: auth.controller.js:18 ~ connect ~ err:", err);
+   }
+
+})();
+
+const createUserMsg = async (result) => {
+   try {
+      const data = {
+         role: result.role,
+         name: result.name,
+         username: result.username,
+         email: result.email,
+         password: bcrypt.hashSync(result.password),
+         permission: roleUser,
+      };
+
+      const isAdded = await UserModel.findOne({ username: data.username });
+      if (isAdded) {
+         await channel.assertQueue('USER_TOKEN_ERROR_MSG');
+         await sendMessage('USER_TOKEN_ERROR_MSG', 'error');
+      } else {
+         const scheme = new UserModel(data);
+         const save = await scheme.save();
+         const token = signInToken(save);
+         await channel.assertQueue('USER_TOKEN_SUCCESS_MSG');
+         await sendMessage('USER_TOKEN_SUCCESS_MSG', token);
+      }
+   } catch (err) {
+      console.log("🚀 ~ file: user.controller.js:58 ~ createUserMsg ~ err:", err);
+   }
 };
+
+// async function connect() {
+//    const oke = await SubscribeMessage('USER_CREATE_MSG');
+//    console.log("🚀 ~ file: route.js:72 ~ router.get ~ oke:", oke)
+//    return res.status(200).json({ msg: 'receive user service' });
+// }
+// connect();
+
+// const setUserMQ = async (result) => {
+//    console.log("🚀 ~ file: user.controller.js:27 ~ MQ_USER_TEST_REQ ~ data:", result);
+//    const data = {
+//       response: 'oke',
+//    };
+//    await channel.sendToQueue(
+//       MQ_USER_TEST_RES,
+//       Buffer.from(JSON.stringify(data))
+//    );
+// };
+
+// const setUserMQ = async (result) => {
+//    console.log("🚀 ~ file: user.controller.js:27 ~ MQ_USER_TEST_REQ ~ data:", result);
+//    const data = {
+//       response: 'oke',
+//    };
+//    await channel.sendToQueue(
+//       MQ_USER_TEST_RES,
+//       Buffer.from(JSON.stringify(data))
+//    );
+// };
 
 // ! ==========================================
 // ! Controller

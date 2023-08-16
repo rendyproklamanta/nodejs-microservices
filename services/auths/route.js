@@ -8,7 +8,7 @@ const {
    changePassword,
    resetPassword,
    tokenData,
-   testMQ,
+   testCreateMsg,
 } = require('@services/auths/controllers/auth.controller');
 
 const { passwordVerificationLimit, emailVerificationLimit } = require('@config/others');
@@ -63,9 +63,9 @@ router.get(`${ENDPOINT}/token/refresh`,
    refreshToken,
 );
 
-//get
+// get
 router.get(`${ENDPOINT}/test/mq`,
-   testMQ,
+   testCreateMsg,
 );
 
 

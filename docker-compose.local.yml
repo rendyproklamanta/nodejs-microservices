@@ -14,3 +14,13 @@ services:
     volumes:
       - ./:/app
       - /app/node_modules
+
+  rabbitmq:
+    image: rabbitmq:3.8-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+        - 5672:5672
+
+networks:
+  default:
+    driver: bridge
