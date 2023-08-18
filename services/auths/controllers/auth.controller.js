@@ -3,79 +3,49 @@ const UserModel = require('@services/users/models/user.model');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { signInToken, tokenForVerify, sendEmail, decodedToken } = require('../middlewares/auth.middleware');
-const amqp = require("amqplib");
-const { sendMessage } = require('@config/broker');
 const { roleUser } = require('@config/permission');
+const { correlationId } = require('@config/others');
+const { authBroker } = require('../brokers/auth.broker');
 
-let channel, connection;
+let channel;
+
 (async () => {
-   try {
-      connection = await amqp.connect(process.env.AMQP_SERVER);
-      channel = await connection.createChannel();
-
-      await channel.consume(
-         'AUTH_TEST_MSG',
-         (msg) => {
-            if (msg) {
-               const data = JSON.parse(msg.content.toString());
-               console.log("[=>>] Receive AUTH_TEST_MSG :", data);
-            }
-         },
-         { noAck: true }
-      );
-
-      console.log("[ Auth Service ] Waiting for messages broker...");
-   } catch (err) {
-      console.log("🚀 ~ file: auth.controller.js:18 ~ connect ~ err:", err);
-   }
-
+   channel = await authBroker();
 })();
 
-let consumedDataSuccess = {};
-let consumedDataError = {};
+const testCreateUserFromAuth = async (req, res) => {
+   try {
+      let replyId = correlationId();
 
-const testCreateMsg = async (req, res) => {
+      const payload = {
+         ...req.body,
+         password: bcrypt.hashSync(req.body.password),
+         permission: roleUser,
+      };
 
-   const payload = {
-      role: req.body.role,
-      name: req.body.name,
-      username: req.body.username,
-      email: req.body.email,
-      password: bcrypt.hashSync(req.body.password),
-      permission: roleUser,
-   };
-   await channel.assertQueue('USER_CREATE_MSG');
-   await sendMessage('USER_CREATE_MSG', payload);
+      await channel.assertQueue('USER_CREATE_REQ').then(() =>
+         channel.sendToQueue('USER_CREATE_REQ',
+            Buffer.from(JSON.stringify(payload)),
+            { correlationId: replyId, replyTo: `USER_CREATE_REP_${replyId}` }
+         ));
 
-   await channel.assertQueue('USER_TOKEN_SUCCESS_MSG');
-   await channel.consume(
-      'USER_TOKEN_SUCCESS_MSG',
-      (msg) => {
-         consumedDataSuccess = JSON.parse(msg.content.toString());
-         console.log("[=>>] Receive USER_TOKEN_SUCCESS_MSG :", consumedDataSuccess);
-      },
-   );
+      const options = {
+         autoDelete: true,
+         arguments: {
+            "x-message-ttl": 1000,
+            "x-expires": 1000
+         }
+      };
 
-   await channel.assertQueue('USER_TOKEN_ERROR_MSG');
-   await channel.consume(
-      'USER_TOKEN_ERROR_MSG',
-      (msg) => {
-         consumedDataError = JSON.parse(msg.content.toString());
-         console.log("[=>>] Receive USER_TOKEN_ERROR_MSG :", consumedDataError);
-      },
-   );
+      await channel.assertQueue(`USER_CREATE_REP_${replyId}`, options);
+      channel.consume(`USER_CREATE_REP_${replyId}`, msg => channel.responseEmitter.emit(msg.properties.correlationId, msg.content), { noAck: true });
+      channel.responseEmitter.once(replyId, msg => {
+         return res.send(JSON.parse(msg));
+      });
 
-   res.json({ data: consumedDataSuccess });
-
-   // if (consumedDataError === 'error') {
-   //    res.json({ success: false });
-   // }
-
-   // if (consumedDataSuccess) {
-   //    res.json({ data: consumedDataSuccess });
-   // } else {
-   //    res.json({ success: false });
-   // }
+   } catch (error) {
+      console.log("🚀 ~ file: auth.controller.js:54 ~ testCreateMsg ~ error:", error);
+   }
 };
 
 // ! ==========================================
@@ -360,7 +330,7 @@ const signUpWithProvider = async (req, res) => {
 };
 
 module.exports = {
-   testCreateMsg,
+   testCreateUserFromAuth,
    login,
    logout,
    tokenData,

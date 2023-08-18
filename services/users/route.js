@@ -8,9 +8,10 @@ const {
    getAllUsers,
 } = require('@services/users/controllers/user.controller');
 const { teamCreateGenerate, teamCreate } = require('@services/users/controllers/team.controller');
-const { isAuthWithPermission, isApiKey } = require('@services/auths/middlewares/auth.middleware');
+const { isApiKey } = require('@services/auths/middlewares/auth.middleware');
 const { validate } = require('@config/validate');
 const { userCreateSchema, userUpdateSchema, userParamsIdSchema } = require('@services/users/middlewares/user.validator');
+const { isAuthWithPermission } = require('@config/authMiddleware');
 
 const ENDPOINT = '/api/users';
 

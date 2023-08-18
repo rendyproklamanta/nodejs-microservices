@@ -8,13 +8,14 @@ const {
    changePassword,
    resetPassword,
    tokenData,
-   testCreateMsg,
+   testCreateUserFromAuth,
 } = require('@services/auths/controllers/auth.controller');
 
 const { passwordVerificationLimit, emailVerificationLimit } = require('@config/others');
-const { isAuth, refreshToken } = require('@services/auths/middlewares/auth.middleware');
+const { refreshToken } = require('@services/auths/middlewares/auth.middleware');
 const { authCreateSchema } = require('@services/auths/middlewares/auth.validator');
 const { validate } = require('@config/validate');
+const { isAuth } = require('@config/authMiddleware');
 
 const ENDPOINT = '/api/auths';
 
@@ -65,7 +66,7 @@ router.get(`${ENDPOINT}/token/refresh`,
 
 // get
 router.get(`${ENDPOINT}/test/mq`,
-   testCreateMsg,
+   testCreateUserFromAuth,
 );
 
 

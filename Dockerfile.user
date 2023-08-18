@@ -9,7 +9,6 @@ WORKDIR /app
 COPY .env .env
 COPY ./config ./config
 COPY ./test ./test
-COPY ./services/auths/middlewares/auth.middleware.js ./services/auths/middlewares/auth.middleware.js
 COPY jsconfig.json jsconfig.json
 COPY jest.config.json jest.config.json
 COPY package.json package.json

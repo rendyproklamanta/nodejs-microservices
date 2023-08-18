@@ -1,127 +1,51 @@
 const bcrypt = require('bcryptjs');
-const { signInToken } = require('../../auths/middlewares/auth.middleware');
 const UserModel = require('../models/user.model');
 const { roleUser } = require('../../../config/permission');
-const amqp = require("amqplib");
-const { sendMessage } = require('@config/broker');
+const { correlationId } = require('@config/others');
+const { userBroker } = require('../brokers/user.broker');
 
-let channel, connection;
+let channel;
 
 (async () => {
-   try {
-      connection = await amqp.connect(process.env.AMQP_SERVER);
-      channel = await connection.createChannel();
-
-      await channel.assertQueue('USER_CREATE_MSG');
-      await channel.consume(
-         'USER_CREATE_MSG',
-         (msg) => {
-            if (msg) {
-               const data = JSON.parse(msg.content);
-               console.log("[=>>] Receive USER_CREATE_MSG :", data);
-               createUserMsg(data);
-               channel.ack(msg);
-            }
-         },
-      );
-
-      console.log("[ User Service ] Waiting for messages broker...");
-   } catch (err) {
-      console.log("🚀 ~ file: auth.controller.js:18 ~ connect ~ err:", err);
-   }
-
+   channel = await userBroker();
 })();
 
-const createUserMsg = async (result) => {
-   try {
-      const data = {
-         role: result.role,
-         name: result.name,
-         username: result.username,
-         email: result.email,
-         password: bcrypt.hashSync(result.password),
-         permission: roleUser,
-      };
-
-      const isAdded = await UserModel.findOne({ username: data.username });
-      if (isAdded) {
-         await channel.assertQueue('USER_TOKEN_ERROR_MSG');
-         await sendMessage('USER_TOKEN_ERROR_MSG', 'error');
-      } else {
-         const scheme = new UserModel(data);
-         const save = await scheme.save();
-         const token = signInToken(save);
-         await channel.assertQueue('USER_TOKEN_SUCCESS_MSG');
-         await sendMessage('USER_TOKEN_SUCCESS_MSG', token);
-      }
-   } catch (err) {
-      console.log("🚀 ~ file: user.controller.js:58 ~ createUserMsg ~ err:", err);
-   }
-};
-
-// async function connect() {
-//    const oke = await SubscribeMessage('USER_CREATE_MSG');
-//    console.log("🚀 ~ file: route.js:72 ~ router.get ~ oke:", oke)
-//    return res.status(200).json({ msg: 'receive user service' });
-// }
-// connect();
-
-// const setUserMQ = async (result) => {
-//    console.log("🚀 ~ file: user.controller.js:27 ~ MQ_USER_TEST_REQ ~ data:", result);
-//    const data = {
-//       response: 'oke',
-//    };
-//    await channel.sendToQueue(
-//       MQ_USER_TEST_RES,
-//       Buffer.from(JSON.stringify(data))
-//    );
-// };
-
-// const setUserMQ = async (result) => {
-//    console.log("🚀 ~ file: user.controller.js:27 ~ MQ_USER_TEST_REQ ~ data:", result);
-//    const data = {
-//       response: 'oke',
-//    };
-//    await channel.sendToQueue(
-//       MQ_USER_TEST_RES,
-//       Buffer.from(JSON.stringify(data))
-//    );
-// };
 
 // ! ==========================================
 // ! Controller
 // ! ==========================================
 const createUser = async (req, res) => {
+
    try {
-      const data = {
-         role: req.body.role,
-         name: req.body.name,
-         username: req.body.username,
+      let replyId = correlationId();
+
+      const payload = {
+         ...req.body,
          password: bcrypt.hashSync(req.body.password),
          permission: roleUser,
       };
+      await channel.assertQueue(`USER_UPDATE_REQ`);
+      channel.sendToQueue('USER_CREATE_REQ',
+         Buffer.from(JSON.stringify(payload)),
+         { correlationId: replyId, replyTo: `USER_CREATE_REP_${replyId}` }
+      );
 
-      const isAdded = await UserModel.findOne({ username: data.username });
-      if (isAdded) {
-         return res.status(403).send({
-            success: false,
-            message: `Username ${data.username} is already Added!`,
-         });
-      } else {
-         const scheme = new UserModel(data);
-         const save = await scheme.save();
-         const token = signInToken(save);
-         res.send({
-            success: true,
-            token,
-            data
-         });
-      }
-   } catch (err) {
-      res.status(500).send({
-         success: false,
-         message: err.message,
+      const options = {
+         autoDelete: true,
+         arguments: {
+            "x-message-ttl": 1000,
+            "x-expires": 1000
+         }
+      };
+
+      await channel.assertQueue(`USER_CREATE_REP_${replyId}`, options);
+      channel.consume(`USER_CREATE_REP_${replyId}`, msg => channel.responseEmitter.emit(msg.properties.correlationId, msg.content), { noAck: true });
+      channel.responseEmitter.once(replyId, msg => {
+         return res.send(JSON.parse(msg));
       });
+
+   } catch (err) {
+      console.log("🚀 ~ file: user.controller.js:81 ~ createUser ~ err:", err);
    }
 };
 
@@ -130,17 +54,27 @@ const createUser = async (req, res) => {
 // ! ==========================================
 const updateUser = async (req, res) => {
    try {
-      const data = {
-         role: req.body.role,
-         name: req.body.name,
-         username: req.body.username,
+      let replyId = correlationId();
+
+      const payload = {
+         ...req.body,
          password: bcrypt.hashSync(req.body.password),
+         permission: roleUser,
+         id: req.params.id
       };
-      await UserModel.findByIdAndUpdate(req.params.id, data);
-      return res.status(200).send({
-         success: true,
-         data,
+
+      await channel.assertQueue(`USER_UPDATE_REQ`);
+      channel.sendToQueue('USER_UPDATE_REQ',
+         Buffer.from(JSON.stringify(payload)),
+         { correlationId: replyId, replyTo: `USER_UPDATE_REP_${replyId}` }
+      );
+
+      await channel.assertQueue(`USER_UPDATE_REP_${replyId}`);
+      channel.consume(`USER_UPDATE_REP_${replyId}`, msg => channel.responseEmitter.emit(msg.properties.correlationId, msg.content), { noAck: true });
+      channel.responseEmitter.once(replyId, msg => {
+         return res.send(JSON.parse(msg));
       });
+
    } catch (err) {
       return res.status(404).send({
          success: false,

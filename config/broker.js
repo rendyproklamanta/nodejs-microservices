@@ -1,16 +1,21 @@
 const amqplib = require('amqplib');
+let events = require('events');
 
 let channel, connection;
-async function connect() {
+async function createChannel() {
    try {
-      connection = await amqplib.connect(process.env.AMQP_SERVER);
+      connection = await amqplib.connect(process.env.AMQP_SERVER, {
+         timeout: 2000,
+      });
       channel = await connection.createChannel();
+      channel.responseEmitter = new events.EventEmitter();
       return channel;
    } catch (err) {
-      console.log("🚀 ~ file: auth.controller.js:18 ~ connect ~ err:", err);
+      console.log("🚀 ~ file: broker.js:12 ~ createChannel ~ err:", err);
    }
+
 }
-connect();
+createChannel();
 
 const sendMessage = async (routingKey, message) => {
    try {
@@ -22,6 +27,19 @@ const sendMessage = async (routingKey, message) => {
    }
 };
 
+const sendReply = async (msg, payload) => {
+   try {
+      channel.sendToQueue(msg.properties.replyTo, Buffer.from(JSON.stringify(payload)), {
+         correlationId: msg.properties.correlationId
+      });
+   } catch (err) {
+      console.warn(err);
+   }
+};
+
+
 module.exports = {
+   createChannel,
    sendMessage,
+   sendReply
 };
