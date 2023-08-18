@@ -28,6 +28,9 @@ const getToken = async (req) => { // eslint-disable-line no-unused-vars
    }
 };
 
+// ! ==========================================
+// ! Middleware
+// ! ==========================================
 const isAuthWithRoles = (...permittedRoles) => {
    return async (req, res, next) => {
       let replyId = correlationId();
@@ -128,6 +131,9 @@ const isAuthWithPermission = (access) => {
    };
 };
 
+// ! ==========================================
+// ! Middleware
+// ! ==========================================
 const isAuth = async (req, res, next) => { // eslint-disable-line no-unused-vars
    // try {
    //    const result = await decodedToken(req, res);

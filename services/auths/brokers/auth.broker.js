@@ -2,8 +2,11 @@ require('dotenv').config();
 const { createChannel, sendReply } = require("@config/broker");
 const UserModel = require('@services/users/models/user.model');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const { signInToken } = require('../middlewares/auth.middleware');
 
 let channel;
+
 
 const authBroker = async () => {
    channel = await createChannel();
@@ -24,6 +27,17 @@ const authBroker = async () => {
          (msg) => {
             const data = JSON.parse(msg.content);
             decodedToken(data);
+            channel.ack(msg);
+         },
+      );
+
+      // Login
+      await channel.assertQueue('AUTH_LOGIN_REQ');
+      channel.consume(
+         'AUTH_LOGIN_REQ',
+         (msg) => {
+            const data = JSON.parse(msg.content);
+            login(data, msg);
             channel.ack(msg);
          },
       );
@@ -191,9 +205,53 @@ const isAdmin = async (data, msg) => {
    }
 };
 
+// ! ==========================================
+// ! Controller
+// ! ==========================================
+const login = async (data, msg) => {
+   try {
+      const result = await UserModel.findOne({ username: data.username });
+      const password = data?.password;
+
+      if (result && result?.status === 'inactive') {
+         sendReply(msg, {
+            success: false,
+            message: 'Account not active!',
+         });
+      }
+
+      if (bcrypt.compareSync(password, result.password)) {
+         const token = signInToken(result);
+         sendReply(msg, {
+            success: true,
+            data: {
+               token,
+               _id: result._id,
+               role: result.role,
+               name: result.name,
+               username: result.username,
+            }
+         });
+
+      } else {
+         sendReply(msg, {
+            success: false,
+            message: 'Invalid user or password!',
+         });
+      }
+
+   } catch (err) {
+      sendReply(msg, {
+         success: false,
+         message: err.message,
+      });
+   }
+};
+
 module.exports = {
    authBroker,
    isAdmin,
    isAuthWithPermission,
    isAuthWithRoles,
+   login,
 };

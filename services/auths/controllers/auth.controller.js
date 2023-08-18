@@ -53,28 +53,31 @@ const testCreateUserFromAuth = async (req, res) => {
 // ! ==========================================
 const login = async (req, res) => {
    try {
-      const role = req.body.role;
-      const username = req.body.username;
+      let replyId = correlationId();
       const rememberme = req.body.rememberme;
-      const data = await UserModel.findOne({ username: username });
-      const password = data?.password;
 
-      if (!data && !password) {
-         return res.status(401).send({
-            success: false,
-            message: 'Invalid user or password!',
-         });
-      }
+      const payload = {
+         ...req.body,
+      };
 
-      if (data && data?.status === 'inactive') {
-         return res.status(401).send({
-            success: false,
-            message: 'Account not active!',
-         });
-      }
+      await channel.assertQueue('AUTH_LOGIN_REQ').then(() =>
+         channel.sendToQueue('AUTH_LOGIN_REQ',
+            Buffer.from(JSON.stringify(payload)),
+            { correlationId: replyId, replyTo: `AUTH_LOGIN_REP_${replyId}` }
+         ));
 
-      if (bcrypt.compareSync(req.body.password, password)) {
-         const token = signInToken(data);
+      const options = {
+         autoDelete: true,
+         arguments: {
+            "x-message-ttl": 1000,
+            "x-expires": 1000
+         }
+      };
+
+      await channel.assertQueue(`AUTH_LOGIN_REP_${replyId}`, options);
+      channel.consume(`AUTH_LOGIN_REP_${replyId}`, msg => channel.responseEmitter.emit(msg.properties.correlationId, msg.content), { noAck: true });
+      channel.responseEmitter.once(replyId, msg => {
+         const data = JSON.parse(msg);
          const refreshToken = signInToken(data, rememberme ? '30d' : '1d');
          res.cookie("refreshToken", refreshToken, {
             maxAge: rememberme ? 2592000000 : 86400000, // 30d || 1d
@@ -82,25 +85,8 @@ const login = async (req, res) => {
             sameSite: true,
             secure: false
          });
-
-         return res.status(200).send({
-            success: true,
-            data: {
-               token,
-               _id: data._id,
-               role: role,
-               name: data.name,
-               username: data.username,
-            }
-         });
-
-      } else {
-         return res.status(401).send({
-            success: false,
-            message: 'Invalid user or password!',
-         });
-      }
-
+         return res.send(JSON.parse(msg));
+      });
    } catch (err) {
       return res.status(500).send({
          success: false,
