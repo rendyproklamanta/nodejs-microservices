@@ -45,9 +45,18 @@ const correlationId = () => {
    return new Date().getTime().toString() + Math.random().toString() + Math.random().toString();
 };
 
+const optionsRabbitMq = {
+   arguments: {
+      "x-message-ttl": 1000,
+      "x-expires": 1000
+   }
+};
+
+
 module.exports = {
    emailVerificationLimit,
    passwordVerificationLimit,
    formatAmountForStripe,
    correlationId,
+   optionsRabbitMq,
 };

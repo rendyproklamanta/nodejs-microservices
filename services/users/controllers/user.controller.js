@@ -2,12 +2,14 @@ const bcrypt = require('bcryptjs');
 const UserModel = require('../models/user.model');
 const { roleUser } = require('../../../config/permission');
 const { correlationId } = require('@config/others');
-const { userBroker } = require('../brokers/user.broker');
+const { userConsumer } = require('../brokers/user.consumer');
+const { USER_CREATE_MQ, USER_UPDATE_MQ } = require('@config/constants');
+const { sendMessage } = require('@config/broker');
 
 let channel;
 
 (async () => {
-   channel = await userBroker();
+   channel = await userConsumer();
 })();
 
 
@@ -15,34 +17,20 @@ let channel;
 // ! Controller
 // ! ==========================================
 const createUser = async (req, res) => {
-
    try {
-      let replyId = correlationId();
+      let replyId = correlationId(); // is unique
 
       const payload = {
          ...req.body,
          password: bcrypt.hashSync(req.body.password),
          permission: roleUser,
       };
-      await channel.assertQueue(`USER_UPDATE_REQ`);
-      channel.sendToQueue('USER_CREATE_REQ',
-         Buffer.from(JSON.stringify(payload)),
-         { correlationId: replyId, replyTo: `USER_CREATE_REP_${replyId}` }
-      );
 
-      const options = {
-         autoDelete: true,
-         arguments: {
-            "x-message-ttl": 1000,
-            "x-expires": 1000
-         }
-      };
+      const queue = USER_CREATE_MQ;
+      const queueReply = USER_CREATE_MQ + replyId;
+      const result = await sendMessage(queue, replyId, queueReply, payload);
 
-      await channel.assertQueue(`USER_CREATE_REP_${replyId}`, options);
-      channel.consume(`USER_CREATE_REP_${replyId}`, msg => channel.responseEmitter.emit(msg.properties.correlationId, msg.content), { noAck: true });
-      channel.responseEmitter.once(replyId, msg => {
-         return res.send(JSON.parse(msg));
-      });
+      return res.send(result);
 
    } catch (err) {
       console.log("🚀 ~ file: user.controller.js:81 ~ createUser ~ err:", err);
@@ -54,7 +42,7 @@ const createUser = async (req, res) => {
 // ! ==========================================
 const updateUser = async (req, res) => {
    try {
-      let replyId = correlationId();
+      let replyId = correlationId(); // is unique
 
       const payload = {
          ...req.body,
@@ -63,17 +51,11 @@ const updateUser = async (req, res) => {
          id: req.params.id
       };
 
-      await channel.assertQueue(`USER_UPDATE_REQ`);
-      channel.sendToQueue('USER_UPDATE_REQ',
-         Buffer.from(JSON.stringify(payload)),
-         { correlationId: replyId, replyTo: `USER_UPDATE_REP_${replyId}` }
-      );
+      const queue = USER_UPDATE_MQ;
+      const queueReply = USER_UPDATE_MQ + replyId;
+      const result = await sendMessage(queue, replyId, queueReply, payload);
 
-      await channel.assertQueue(`USER_UPDATE_REP_${replyId}`);
-      channel.consume(`USER_UPDATE_REP_${replyId}`, msg => channel.responseEmitter.emit(msg.properties.correlationId, msg.content), { noAck: true });
-      channel.responseEmitter.once(replyId, msg => {
-         return res.send(JSON.parse(msg));
-      });
+      return res.send(result);
 
    } catch (err) {
       return res.status(404).send({

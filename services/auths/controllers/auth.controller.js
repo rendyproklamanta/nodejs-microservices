@@ -4,18 +4,20 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { signInToken, tokenForVerify, sendEmail, decodedToken } = require('../middlewares/auth.middleware');
 const { roleUser } = require('@config/permission');
-const { correlationId } = require('@config/others');
-const { authBroker } = require('../brokers/auth.broker');
+const { correlationId, optionsRabbitMq } = require('@config/others');
+const { authConsumer } = require('../brokers/auth.consumer');
+const { AUTH_LOGIN_MQ, USER_CREATE_MQ } = require('@config/constants');
+const { sendMessage } = require('@config/broker');
 
 let channel;
 
 (async () => {
-   channel = await authBroker();
+   channel = await authConsumer();
 })();
 
 const testCreateUserFromAuth = async (req, res) => {
    try {
-      let replyId = correlationId();
+      let replyId = correlationId(); // is unique
 
       const payload = {
          ...req.body,
@@ -23,25 +25,11 @@ const testCreateUserFromAuth = async (req, res) => {
          permission: roleUser,
       };
 
-      await channel.assertQueue('USER_CREATE_REQ').then(() =>
-         channel.sendToQueue('USER_CREATE_REQ',
-            Buffer.from(JSON.stringify(payload)),
-            { correlationId: replyId, replyTo: `USER_CREATE_REP_${replyId}` }
-         ));
+      const queue = USER_CREATE_MQ;
+      const queueReply = USER_CREATE_MQ + replyId;
+      const result = await sendMessage(queue, replyId, queueReply, payload);
 
-      const options = {
-         autoDelete: true,
-         arguments: {
-            "x-message-ttl": 1000,
-            "x-expires": 1000
-         }
-      };
-
-      await channel.assertQueue(`USER_CREATE_REP_${replyId}`, options);
-      channel.consume(`USER_CREATE_REP_${replyId}`, msg => channel.responseEmitter.emit(msg.properties.correlationId, msg.content), { noAck: true });
-      channel.responseEmitter.once(replyId, msg => {
-         return res.send(JSON.parse(msg));
-      });
+      return res.send(result);
 
    } catch (error) {
       console.log("🚀 ~ file: auth.controller.js:54 ~ testCreateMsg ~ error:", error);
@@ -60,21 +48,13 @@ const login = async (req, res) => {
          ...req.body,
       };
 
-      await channel.assertQueue('AUTH_LOGIN_REQ').then(() =>
-         channel.sendToQueue('AUTH_LOGIN_REQ',
-            Buffer.from(JSON.stringify(payload)),
-            { correlationId: replyId, replyTo: `AUTH_LOGIN_REP_${replyId}` }
-         ));
+      await channel.assertQueue(AUTH_LOGIN_MQ);
+      channel.sendToQueue(AUTH_LOGIN_MQ,
+         Buffer.from(JSON.stringify(payload)),
+         { correlationId: replyId, replyTo: `AUTH_LOGIN_REP_${replyId}` }
+      );
 
-      const options = {
-         autoDelete: true,
-         arguments: {
-            "x-message-ttl": 1000,
-            "x-expires": 1000
-         }
-      };
-
-      await channel.assertQueue(`AUTH_LOGIN_REP_${replyId}`, options);
+      await channel.assertQueue(`AUTH_LOGIN_REP_${replyId}`, optionsRabbitMq);
       channel.consume(`AUTH_LOGIN_REP_${replyId}`, msg => channel.responseEmitter.emit(msg.properties.correlationId, msg.content), { noAck: true });
       channel.responseEmitter.once(replyId, msg => {
          const data = JSON.parse(msg);

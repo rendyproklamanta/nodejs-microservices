@@ -1,87 +1,9 @@
 require('dotenv').config();
-const { createChannel, sendReply } = require("@config/broker");
+const { sendReply } = require("@config/broker");
 const UserModel = require('@services/users/models/user.model');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { signInToken } = require('../middlewares/auth.middleware');
-
-let channel;
-
-
-const authBroker = async () => {
-   channel = await createChannel();
-
-   const options = {
-      autoDelete: true,
-      arguments: {
-         "x-message-ttl": 1000,
-         "x-expires": 1000
-      }
-   };
-
-   try {
-      // Auth decode token
-      await channel.assertQueue('AUTH_DECODED_TOKEN_REQ', options);
-      channel.consume(
-         'AUTH_DECODED_TOKEN_REQ',
-         (msg) => {
-            const data = JSON.parse(msg.content);
-            decodedToken(data);
-            channel.ack(msg);
-         },
-      );
-
-      // Login
-      await channel.assertQueue('AUTH_LOGIN_REQ');
-      channel.consume(
-         'AUTH_LOGIN_REQ',
-         (msg) => {
-            const data = JSON.parse(msg.content);
-            login(data, msg);
-            channel.ack(msg);
-         },
-      );
-
-      // Auth check
-      await channel.assertQueue('AUTH_PERMISSION_ACCESS_REQ', options);
-      channel.consume(
-         'AUTH_PERMISSION_ACCESS_REQ',
-         (msg) => {
-            const data = JSON.parse(msg.content);
-            isAuthWithPermission(data, msg);
-            channel.ack(msg);
-         },
-      );
-
-      // Auth check with roles
-      await channel.assertQueue('AUTH_PERMISSION_ROLE_REQ', options);
-      channel.consume(
-         'AUTH_PERMISSION_ROLE_REQ',
-         (msg) => {
-            const data = JSON.parse(msg.content);
-            isAuthWithRoles(data, msg);
-            channel.ack(msg);
-         },
-      );
-
-      // Check isadmin
-      await channel.assertQueue('AUTH_ISADMIN_REQ');
-      channel.consume(
-         'AUTH_ISADMIN_REQ',
-         (msg) => {
-            const data = JSON.parse(msg.content);
-            isAdmin(data, msg);
-            channel.ack(msg);
-         },
-      );
-
-      console.log("[ Auth Service ] Waiting for messages broker...");
-      return channel;
-   } catch (err) {
-      console.log("🚀 ~ file: auth.controller.js:18 ~ connect ~ err:", err);
-   }
-
-};
 
 // ! ==========================================
 // ! Middleware
@@ -114,7 +36,7 @@ const decodedToken = async (token) => { // eslint-disable-line no-unused-vars
 // ! ==========================================
 // ! Middleware
 // ! ==========================================
-const isAuthWithPermission = async (data, msg) => {
+const isAuthWithPermissionMsg = async (data, msg) => {
    try {
       const result = await decodedToken(data.token);
       let hasAccess = false;
@@ -153,7 +75,7 @@ const isAuthWithPermission = async (data, msg) => {
 // ! ==========================================
 // ! Middleware
 // ! ==========================================
-const isAuthWithRoles = async (data, msg) => {
+const isAuthWithRolesMsg = async (data, msg) => {
    try {
       const result = await decodedToken(data.token);
       let hasAccess = false;
@@ -191,7 +113,7 @@ const isAuthWithRoles = async (data, msg) => {
 // ! ==========================================
 // ! Middleware
 // ! ==========================================
-const isAdmin = async (data, msg) => {
+const isAdminMsg = async (data, msg) => {
    const admin = await UserModel.findOne({ role: 'Admin' });
    if (admin) {
       sendReply(msg, {
@@ -208,15 +130,22 @@ const isAdmin = async (data, msg) => {
 // ! ==========================================
 // ! Controller
 // ! ==========================================
-const login = async (data, msg) => {
+const loginMsg = async (data, msg) => {
    try {
       const result = await UserModel.findOne({ username: data.username });
       const password = data?.password;
 
+      if (!result) {
+         sendReply(msg, {
+            success: false,
+            message: 'User not found!',
+         });
+      }
+
       if (result && result?.status === 'inactive') {
          sendReply(msg, {
             success: false,
-            message: 'Account not active!',
+            message: 'User not active!',
          });
       }
 
@@ -248,10 +177,37 @@ const login = async (data, msg) => {
    }
 };
 
+// ! ==========================================
+// ! Constroller
+// ! ==========================================
+const generateTokenMsg = async (data, msg, queue) => {
+   const token = jwt.sign(
+      {
+         _id: data.user._id,
+         name: data.user.name,
+         email: data.user.email,
+         address: data.user.address,
+         role: data.user.role,
+         permission: data.user.permission,
+      },
+      process.env.JWT_SECRET,
+      {
+         // expiresIn: '365d',
+         expiresIn: data.expiresIn ?? '1m',
+      }
+   );
+
+   sendReply(msg, {
+      queue: queue,
+      success: true,
+      data: token,
+   });
+};
+
 module.exports = {
-   authBroker,
-   isAdmin,
-   isAuthWithPermission,
-   isAuthWithRoles,
-   login,
+   isAdminMsg,
+   isAuthWithPermissionMsg,
+   isAuthWithRolesMsg,
+   loginMsg,
+   generateTokenMsg,
 };

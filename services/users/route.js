@@ -28,7 +28,7 @@ router.get(`/`, (req, res) => {
 
 //create
 router.post(`${ENDPOINT}`,
-   isAuthWithPermission('user-create'), validate(userCreateSchema), // middleware
+   validate(userCreateSchema), // middleware
    createUser // controller
 );
 

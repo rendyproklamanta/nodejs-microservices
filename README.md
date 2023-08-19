@@ -61,3 +61,10 @@ yarn dev
 ngrok http 5000
 ```
 => http://xyz.ngrok.io:5000
+
+## Sample Transactions with microservices
+- Checkout flow
+-> Save product order : doc.order (objectId user)
+-> Save product stock : doc.product (objectId product)
+-> Save user if register : doc.user
+-> Get token if auto sign after register

@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+
+   rabbitmq:
+      image: rabbitmq:3.8-management-alpine
+      container_name: 'rabbitmq'
+      ports:
+         - '15672:15672'
+         - '5672:5672'
+      network_mode: bridge
+
+   mongodb:
+      image: mongo:latest
+      ports:
+         - '27017:27017'
+      volumes:
+         - mongodb:/data/db
+      network_mode: bridge
+
+volumes:
+  mongodb:
+
+# docker-compose up -d
