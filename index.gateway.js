@@ -17,7 +17,7 @@ app.get('/healthcheck', (req, res) => {
 });
 
 routes.forEach(route => {
-   app.use(createProxyMiddleware(route.proxy));
+   app.use(createProxyMiddleware(route.endpoint, route.proxy));
 });
 
 module.exports = app;

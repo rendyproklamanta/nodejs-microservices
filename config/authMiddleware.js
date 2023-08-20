@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { sendMessage } = require('@config/broker');
+const { sendQueue } = require('@config/broker');
 const { AUTH_GENERATE_TOKEN_MQ, AUTH_PERMISSION_ROLE_MQ, AUTH_PERMISSION_ACCESS_MQ, AUTH_ISADMIN_MQ } = require('./constants');
 const { correlationId } = require('./others');
 
@@ -37,7 +37,7 @@ const signInToken = async (user, expiresIn) => {
 
       const queue = AUTH_GENERATE_TOKEN_MQ;
       const queueReply = AUTH_GENERATE_TOKEN_MQ + replyId;
-      const result = await sendMessage(queue, replyId, queueReply, payload);
+      const result = await sendQueue(queue, replyId, queueReply, payload);
 
       return result;
 
@@ -69,7 +69,7 @@ const isAuthWithRoles = (...permittedRoles) => {
       };
 
       const queue = AUTH_PERMISSION_ROLE_MQ;
-      const result = await sendMessage(queue, payload);
+      const result = await sendQueue(queue, payload);
 
       if (result.success) {
          return next();
@@ -108,7 +108,7 @@ const isAuthWithPermission = (access) => {
 
       const queue = AUTH_PERMISSION_ACCESS_MQ;
       const queueReply = AUTH_PERMISSION_ACCESS_MQ + replyId;
-      const result = await sendMessage(queue, replyId, queueReply, payload);
+      const result = await sendQueue(queue, replyId, queueReply, payload);
 
       if (result.success) {
          return next();
@@ -153,7 +153,7 @@ const isAdmin = async (req, res, next) => {
 
    const queue = AUTH_ISADMIN_MQ;
    const queueReply = AUTH_ISADMIN_MQ + replyId;
-   const result = await sendMessage(queue, replyId, queueReply, payload);
+   const result = await sendQueue(queue, replyId, queueReply, payload);
 
    if (result.success) {
       return next();

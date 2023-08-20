@@ -2,6 +2,7 @@
 const routes = [
    {
       service: '@services/auths/route',
+      endpoint: '/api/auths',
       proxy: {
          target: "http://localhost:5001",
          changeOrigin: true,
@@ -9,6 +10,7 @@ const routes = [
    },
    {
       service: '@services/users/route',
+      endpoint: '/api/users',
       proxy: {
          target: "http://localhost:5002",
          changeOrigin: true,

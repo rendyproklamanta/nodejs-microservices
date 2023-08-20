@@ -1,0 +1,11 @@
+.editorconfig
+.gitlab-ci.yml
+.gitignore
+.git
+
+prerequisite
+Dockerfile
+Dockerfile.*
+docker-compose.*
+README.md
+vercel.json

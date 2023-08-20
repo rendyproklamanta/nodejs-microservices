@@ -6,19 +6,15 @@ ENV PATH /app/node_modules/.bin:$PATH
 
 WORKDIR /app
 
-COPY .env .env
-COPY ./config ./config
-COPY ./test ./test
-COPY package.json package.json
-COPY yarn.lock yarn.lock
-COPY jsconfig.json jsconfig.json
-COPY jest.config.json jest.config.json
-COPY index.micro.js index.micro.js
+COPY . .
+RUN find index.* -maxdepth 0 -name 'index.micro.js' -prune -o -exec rm -rf '{}' ';'
+RUN mkdir -p services_tmp
 
-COPY ./services/users/models ./services/users/models
-COPY ./services/auths ./services/auths
 COPY ./services/auths/route.js ./route.js
-RUN rm -rf ./services/auths/route.js
+COPY ./services/users/models ./services_tmp/users/models
+
+RUN find ./services/* -maxdepth 0 -name 'auths' -prune -o -exec rm -rf '{}' ';'
+RUN mv ./services_tmp/* ./services/
 
 RUN yarn install
 

@@ -63,8 +63,14 @@ ngrok http 5000
 => http://xyz.ngrok.io:5000
 
 ## Sample Transactions with microservices
-- Checkout flow
--> Save product order : doc.order (objectId user)
--> Save product stock : doc.product (objectId product)
--> Save user if register : doc.user
--> Get token if auto sign after register
+- <b>Editing Flow</b>
+=> services => routes => middleware => controller => broker =>  model
+<br/>
+- <b>Checkout order Flow</b>
+~ Save product stock : doc.product (objectId product)
+~ Save product order : doc.order (objectId user)
+~ Save user if register : doc.user
+~ Get token if auto sign after register
+<br/>
+- <b>Deployment Flow</b>
+=> 

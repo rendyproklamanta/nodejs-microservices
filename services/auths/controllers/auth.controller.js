@@ -7,7 +7,7 @@ const { roleUser } = require('@config/permission');
 const { correlationId, optionsRabbitMq } = require('@config/others');
 const { authConsumer } = require('../brokers/auth.consumer');
 const { AUTH_LOGIN_MQ, USER_CREATE_MQ } = require('@config/constants');
-const { sendMessage } = require('@config/broker');
+const { sendQueue } = require('@config/broker');
 
 let channel;
 
@@ -27,7 +27,7 @@ const testCreateUserFromAuth = async (req, res) => {
 
       const queue = USER_CREATE_MQ;
       const queueReply = USER_CREATE_MQ + replyId;
-      const result = await sendMessage(queue, replyId, queueReply, payload);
+      const result = await sendQueue(queue, replyId, queueReply, payload);
 
       return res.send(result);
 

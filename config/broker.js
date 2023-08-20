@@ -18,7 +18,7 @@ async function createChannel() {
 }
 createChannel();
 
-// const sendMessage = async (routingKey, message) => {
+// const sendQueue = async (routingKey, message) => {
 //    try {
 //       await channel.assertQueue(routingKey);
 //       channel.sendToQueue(routingKey, Buffer.from(JSON.stringify(message)));
@@ -28,7 +28,7 @@ createChannel();
 //    }
 // };
 
-const sendMessage = async (queue, replyId, queueReply, payload) => {
+const sendQueue = async (queue, replyId, queueReply, payload) => {
    try {
       await channel.assertQueue(queue);
       channel.sendToQueue(queue,
@@ -96,7 +96,7 @@ const sendReply = async (msg, payload) => {
 
 module.exports = {
    createChannel,
-   sendMessage,
+   sendQueue,
    sendReply,
    // getReply
 };

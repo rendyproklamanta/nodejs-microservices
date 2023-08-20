@@ -4,9 +4,9 @@ const { roleUser } = require('../../../config/permission');
 const { correlationId } = require('@config/others');
 const { userConsumer } = require('../brokers/user.consumer');
 const { USER_CREATE_MQ, USER_UPDATE_MQ } = require('@config/constants');
-const { sendMessage } = require('@config/broker');
+const { sendQueue } = require('@config/broker');
 
-let channel;
+let channel; // eslint-disable-line no-unused-vars
 
 (async () => {
    channel = await userConsumer();
@@ -28,7 +28,7 @@ const createUser = async (req, res) => {
 
       const queue = USER_CREATE_MQ;
       const queueReply = USER_CREATE_MQ + replyId;
-      const result = await sendMessage(queue, replyId, queueReply, payload);
+      const result = await sendQueue(queue, replyId, queueReply, payload);
 
       return res.send(result);
 
@@ -53,7 +53,7 @@ const updateUser = async (req, res) => {
 
       const queue = USER_UPDATE_MQ;
       const queueReply = USER_UPDATE_MQ + replyId;
-      const result = await sendMessage(queue, replyId, queueReply, payload);
+      const result = await sendQueue(queue, replyId, queueReply, payload);
 
       return res.send(result);
 
