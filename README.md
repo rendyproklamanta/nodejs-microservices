@@ -20,7 +20,32 @@
 - module-alias : import alias @
 - pm2 : for deployed to VM
 
-## Install and run on Docker as Microservice
+## List of microservices Port
+- API Gateway : http://localhost:5000
+- Auth service : http://localhost:5001
+- User service : http://localhost:5002
+
+## Build and run each service using docker-compose
+- <b>Local development</b>
+```
+docker-compose -f docker-compose.local.yml up -d
+```
+=> http://localhost:5000
+<br>
+
+- <b>Production</b>
+1. Install traefik
+```
+https://github.com/rendyproklamanta/docker-traefik/tree/main/traefik
+```
+2. Build and deploy
+```
+docker build -t gateway_service:latest -f Dockerfile.gateway .
+docker-compose -f docker-compose.gateway.yml up -d
+```
+
+
+## Build and run "each" service on Docker 
 
 - Gateway Service <sup>*mandatory</sup>
 ```
@@ -34,6 +59,7 @@ docker run -p 5000:5000 gateway_service
 - Auth Service
 @ login, logout, forgot
 ```
+
 docker build -t auth_service:latest -f Dockerfile.auth .
 docker run -p 5001:5000 auth_service
 ```
@@ -44,12 +70,12 @@ docker run -p 5001:5000 auth_service
 - User Service
 @ manage user  CRUD
 ```
-docker build -t user_service:latest -f Dockerfile.user .
+docker build --build-arg SERVICE_NAME=user -t user_service:latest -f Dockerfile.micro .
 docker run -p 5002:5000 user_service
 ```
 => http://localhost:5002
 
-## Install and run on VM or local PC
+## Build and run on VM or local PC without Docker
 ```
 yarn install
 yarn dev
@@ -66,11 +92,23 @@ ngrok http 5000
 - <b>Editing Flow</b>
 => services => routes => middleware => controller => broker =>  model
 <br/>
+
 - <b>Checkout order Flow</b>
-~ Save product stock : doc.product (objectId product)
-~ Save product order : doc.order (objectId user)
-~ Save user if register : doc.user
-~ Get token if auto sign after register
+== Save user if not registered ==
+<i>queue</i>: USER_CREATE_MQ
+<i>db</i> :  doc.user
+== Save product stock ==
+<i>queue</i>: PRODUCT_CREATE_MQ
+<i>db</i> : doc.product
+<i>param</i> : objectId product
+== Save product order ==
+<i>queue</i>: ORDER_CREATE_MQ
+<i>db</i> :  doc.order
+<i>param</i> : objectId user
+== Auto sign in after complete checkout ==
 <br/>
+
 - <b>Deployment Flow</b>
-=> 
+=> using cloud VPS minimal 2gb
+=> using gitlab runner for pipeline
+=> edit "gitlab-ci.yml" to deploy each service

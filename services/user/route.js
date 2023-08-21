@@ -6,11 +6,11 @@ const {
    deleteUser,
    getUserById,
    getAllUsers,
-} = require('@services/users/controllers/user.controller');
-const { teamCreateGenerate, teamCreate } = require('@services/users/controllers/team.controller');
+} = require('@services/user/controllers/user.controller');
+const { teamCreateGenerate, teamCreate } = require('@services/user/controllers/team.controller');
 const { validate } = require('@config/validate');
-const { userCreateSchema, userUpdateSchema, userParamsIdSchema } = require('@services/users/middlewares/user.validator');
-const { isAuthWithPermission } = require('@config/authMiddleware');
+const { userCreateSchema, userUpdateSchema, userParamsIdSchema } = require('@services/user/middlewares/user.validator');
+const { isAuthWithPermission } = require('@config/middlewares/auth.middleware');
 
 const ENDPOINT = '/api/users';
 

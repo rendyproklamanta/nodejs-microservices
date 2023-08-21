@@ -1,5 +1,5 @@
 require('module-alias/register');
-const expressMiddleware = require("@config/expressMiddleware");
+const expressMiddleware = require("@config/middlewares/express.middleware");
 const routes = require('@config/routes');
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");

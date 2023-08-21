@@ -1,5 +1,5 @@
 require('dotenv').config();
-const UserModel = require('@services/users/models/user.model');
+const UserModel = require('@services/user/models/user.model');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { signInToken, tokenForVerify, sendEmail, decodedToken } = require('../middlewares/auth.middleware');

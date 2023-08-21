@@ -1,0 +1,30 @@
+variables:
+   # Gateway Service
+   SERVICE_NAME: gateway
+
+stages:
+   - deploy_$SERVICE_NAME
+   - rollout_$SERVICE_NAME
+
+deploy:
+   stage: deploy_$SERVICE_NAME
+   image: docker
+   services:
+      - name: docker:dind
+   script:
+      - docker --version
+      - sudo docker build --build-arg SERVICE_NAME=$SERVICE_NAME -t $SERVICE_NAME_service:latest -f Dockerfile.$SERVICE_NAME .
+      - sudo docker-compose -f services/$SERVICE_NAME/docker-compose.yml up --force-recreate -d
+      - sudo docker logs $(sudo docker ps -aq --filter name=$SERVICE_NAME_service)
+   after_script:
+      - sudo docker system prune --volumes --all --force
+
+rollout:
+   stage: rollout_$SERVICE_NAME
+   variables:
+      GIT_STRATEGY: none
+   script:
+      - sudo mkdir -p /root/.docker/cli-plugins
+      - sudo curl https://raw.githubusercontent.com/wowu/docker-rollout/master/docker-rollout -o /root/.docker/cli-plugins/docker-rollout
+      - sudo chmod +x /root/.docker/cli-plugins/docker-rollout
+      - sudo docker rollout $SERVICE_NAME_service

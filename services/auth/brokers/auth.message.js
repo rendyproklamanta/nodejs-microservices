@@ -1,6 +1,6 @@
 require('dotenv').config();
 const { sendReply } = require("@config/broker");
-const UserModel = require('@services/users/models/user.model');
+const UserModel = require('@services/user/models/user.model');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { signInToken } = require('../middlewares/auth.middleware');

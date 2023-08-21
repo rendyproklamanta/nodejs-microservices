@@ -1,4 +1,4 @@
-const { signInToken } = require('@config/authMiddleware');
+const { signInToken } = require('@config/middlewares/auth.middleware');
 const { sendReply } = require('@config/broker');
 const UserModel = require('../models/user.model');
 

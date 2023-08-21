@@ -1,14 +1,18 @@
 FROM node:16-alpine
 
-RUN mkdir -p /app && chown -R node:node /app
-
-ENV PATH /app/node_modules/.bin:$PATH
-
 WORKDIR /app
+
+RUN mkdir -p /app && chown -R node:node /app
+ENV PATH /app/node_modules/.bin:$PATH
 
 COPY . .
 RUN find index.* -maxdepth 0 -name 'index.gateway.js' -prune -o -exec rm -rf '{}' ';'
-RUN rm -rf services
+RUN mkdir -p services_tmp
+
+COPY ./services/gateway ./services_tmp/gateway
+
+RUN find ./services/* -maxdepth 0 -name 'gateway' -prune -o -exec rm -rf '{}' ';'
+RUN mv ./services_tmp/gateway ./services/gateway
 
 RUN yarn install
 

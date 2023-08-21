@@ -1,7 +1,7 @@
 require('dotenv').config();
 const { sendQueue } = require('@config/broker');
-const { AUTH_GENERATE_TOKEN_MQ, AUTH_PERMISSION_ROLE_MQ, AUTH_PERMISSION_ACCESS_MQ, AUTH_ISADMIN_MQ } = require('./constants');
-const { correlationId } = require('./others');
+const { AUTH_GENERATE_TOKEN_MQ, AUTH_PERMISSION_ROLE_MQ, AUTH_PERMISSION_ACCESS_MQ, AUTH_ISADMIN_MQ } = require('../constants');
+const { correlationId } = require('../others');
 
 // ! ==========================================
 // ! Middleware
@@ -20,6 +20,27 @@ const getToken = async (req) => { // eslint-disable-line no-unused-vars
       }
    } catch (err) {
       return false;
+   }
+};
+
+// ! ==========================================
+// ! Middleware
+// ! ==========================================
+const isApiKey = async (req, res, next) => {
+   try {
+      const headerApiKey = req.header("x-api-key");
+      const apiKey = process.env.API_KEY;
+      if (apiKey === headerApiKey) {
+         next();
+      } else {
+         res.status(401).send({
+            message: 'API Key failed',
+         });
+      }
+   } catch (err) {
+      res.status(401).send({
+         message: 'You are not logged in',
+      });
    }
 };
 
@@ -164,6 +185,7 @@ const isAdmin = async (req, res, next) => {
 
 module.exports = {
    getToken,
+   isApiKey,
    signInToken,
    isAuthWithRoles,
    isAuthWithPermission,

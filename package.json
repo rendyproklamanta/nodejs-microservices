@@ -13,7 +13,7 @@
       "gateway-dev": "cross-env NODE_ENV=development nodemon index.gateway.js",
       "gateway-prod": "cross-env NODE_ENV=production node index.gateway.js",
       "predev": "jest healthcheck.test.js --force-exit ",
-      "dev": "cross-env NODE_ENV=development nodemon index.js",
+      "dev": "cross-env NODE_ENV=development nodemon -L --inspect=0.0.0.0 index.js",
       "prestart": "jest healthcheck.test.js --force-exit",
       "start": "cross-env NODE_ENV=production node index.js",
       "data:import": "cross-env NODE_ENV=development node seed.js"

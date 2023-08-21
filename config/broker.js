@@ -13,6 +13,7 @@ async function createChannel() {
       return channel;
    } catch (err) {
       console.log("🚀 ~ file: broker.js:12 ~ createChannel ~ err:", err);
+      process.exit(1);
    }
 
 }

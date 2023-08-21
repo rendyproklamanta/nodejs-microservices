@@ -9,13 +9,13 @@ const {
    resetPassword,
    tokenData,
    testCreateUserFromAuth,
-} = require('@services/auths/controllers/auth.controller');
+} = require('@services/auth/controllers/auth.controller');
 
 const { passwordVerificationLimit, emailVerificationLimit } = require('@config/others');
-const { refreshToken } = require('@services/auths/middlewares/auth.middleware');
-const { authCreateSchema } = require('@services/auths/middlewares/auth.validator');
+const { refreshToken } = require('@services/auth/middlewares/auth.middleware');
+const { authCreateSchema } = require('@services/auth/middlewares/auth.validator');
 const { validate } = require('@config/validate');
-const { isAuth } = require('@config/authMiddleware');
+const { isAuth } = require('@config/middlewares/auth.middleware');
 
 const ENDPOINT = '/api/auths';
 
