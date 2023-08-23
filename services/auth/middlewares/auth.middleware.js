@@ -9,7 +9,13 @@ const jwt = require('jsonwebtoken');
 // ! ==========================================
 const refreshToken = async (req, res, next) => { // eslint-disable-line no-unused-vars
    try {
-      const refreshToken = req.cookies.refreshToken;
+      let refreshToken;
+
+      if (req.cookies.refreshToken) {
+         refreshToken = req.cookies.refreshToken;
+      } else {
+         refreshToken = req.body.refreshToken;
+      }
 
       if (!refreshToken) {
          return res.status(401).send({
@@ -25,7 +31,7 @@ const refreshToken = async (req, res, next) => { // eslint-disable-line no-unuse
       return res.status(200).send({
          success: true,
          data: {
-            accessToken : token.data
+            accessToken: token.data
          }
       });
    } catch (error) {

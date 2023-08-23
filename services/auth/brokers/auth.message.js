@@ -28,6 +28,7 @@ const decodedToken = async (token) => { // eslint-disable-line no-unused-vars
       const result = {
          success: false,
          message: err.message,
+         error: err,
       };
       return result;
    }
