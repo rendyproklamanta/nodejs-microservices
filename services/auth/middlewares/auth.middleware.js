@@ -1,4 +1,5 @@
 require('dotenv').config();
+const { decrypt } = require('@config/encryption');
 const { signInToken } = require('@config/middlewares/auth.middleware');
 const jwt = require('jsonwebtoken');
 // const { ADMIN, USER } = require('@config/constants');
@@ -24,7 +25,7 @@ const refreshToken = async (req, res, next) => { // eslint-disable-line no-unuse
          });
       }
 
-      const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+      const decoded = jwt.verify(decrypt(refreshToken), process.env.JWT_SECRET);
       const token = await signInToken(decoded);
 
       // res.header('Authorization', accessToken).send(decoded.user);

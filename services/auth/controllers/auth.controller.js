@@ -4,16 +4,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { signInToken, tokenForVerify, sendEmail, decodedToken } = require('../middlewares/auth.middleware');
 const { roleUser } = require('@config/permission');
-const { correlationId, optionsRabbitMq } = require('@config/others');
-const { authConsumer } = require('../brokers/auth.consumer');
+const { correlationId } = require('@config/others');
 const { AUTH_LOGIN_MQ, USER_CREATE_MQ } = require('@config/constants');
 const { sendQueue } = require('@config/broker');
-
-let channel;
-
-(async () => {
-   channel = await authConsumer();
-})();
+const { encrypt } = require('@config/encryption');
 
 const testCreateUserFromAuth = async (req, res) => {
    try {
@@ -48,25 +42,27 @@ const login = async (req, res) => {
          ...req.body,
       };
 
-      await channel.assertQueue(AUTH_LOGIN_MQ);
-      channel.sendToQueue(AUTH_LOGIN_MQ,
-         Buffer.from(JSON.stringify(payload)),
-         { correlationId: replyId, replyTo: `AUTH_LOGIN_REP_${replyId}` }
-      );
+      const queue = AUTH_LOGIN_MQ;
+      const queueReply = AUTH_LOGIN_MQ + replyId;
+      const result = await sendQueue(queue, replyId, queueReply, payload);
 
-      await channel.assertQueue(`AUTH_LOGIN_REP_${replyId}`, optionsRabbitMq);
-      channel.consume(`AUTH_LOGIN_REP_${replyId}`, msg => channel.responseEmitter.emit(msg.properties.correlationId, msg.content), { noAck: true });
-      channel.responseEmitter.once(replyId, msg => {
-         const data = JSON.parse(msg);
-         const refreshToken = signInToken(data, rememberme ? '30d' : '1d');
+      if (result.success) {
+         const remembermeDay = '30d';
+         const remembermeTime = 2592000000; // in ms = 30d
+         const expireDay = '1d';
+         const expireTime = 86400000; // in ms = 1d
+
+         const refreshToken = encrypt(signInToken(result.data.token, rememberme ? remembermeDay : expireDay));
          res.cookie("refreshToken", refreshToken, {
-            maxAge: rememberme ? 2592000000 : 86400000, // 30d || 1d
+            maxAge: rememberme ? remembermeTime : expireTime,
             httpOnly: true,
             sameSite: true,
             secure: false
          });
-         return res.send(JSON.parse(msg));
-      });
+      }
+
+      return res.send(result);
+
    } catch (err) {
       return res.status(500).send({
          success: false,
