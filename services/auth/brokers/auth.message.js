@@ -4,6 +4,7 @@ const UserModel = require('@services/user/models/user.model');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { signInToken } = require('../middlewares/auth.middleware');
+const errorCode = require('../errorCode.json');
 
 // ! ==========================================
 // ! Middleware
@@ -13,22 +14,26 @@ const decodedToken = async (token) => { // eslint-disable-line no-unused-vars
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       if (decoded) {
          const result = {
+            code: 0,
             success: true,
             data: decoded,
          };
          return result;
       } else {
+         const code = 100005;
          const result = {
+            code: code,
             success: false,
             data: decoded,
+            error: errorCode[code],
          };
          return result;
       }
-   } catch (err) {
+   } catch (error) {
       const result = {
+         code: 0,
          success: false,
-         message: err.message,
-         error: err,
+         error,
       };
       return result;
    }
@@ -39,37 +44,45 @@ const decodedToken = async (token) => { // eslint-disable-line no-unused-vars
 // ! ==========================================
 const isAuthWithPermissionMsg = async (data, msg) => {
    try {
-      const result = await decodedToken(data.token);
+      const res = await decodedToken(data.token);
       let hasAccess = false;
 
-      if (result?.success) {
+      if (res?.success) {
 
-         if (result.data?.permission?.includes('all')) {
+         if (res.data?.permission?.includes('all')) {
             hasAccess = true;
-         } else if (result.data?.permission?.includes(data.access)) {
+         } else if (res.data?.permission?.includes(data.access)) {
             hasAccess = true;
          }
 
          if (hasAccess) {
             sendReply(msg, {
+               code: 0,
                success: true,
-               message: "You have permission"
             });
          } else {
+            const code = 100004;
             sendReply(msg, {
+               code: code,
                success: false,
-               message: "You don't have permission"
+               error: errorCode[code],
             });
          }
       } else {
          sendReply(msg, {
+            code: res.code,
             success: false,
-            message: result.message,
+            error: res.error,
          });
       }
 
    } catch (error) {
       console.log("🚀 ~ file: auth.broker.js:94 ~ isAuthWithPermission ~ error:", error);
+      sendReply(msg, {
+         code: 0,
+         success: false,
+         error,
+      });
    }
 };
 
@@ -78,36 +91,43 @@ const isAuthWithPermissionMsg = async (data, msg) => {
 // ! ==========================================
 const isAuthWithRolesMsg = async (data, msg) => {
    try {
-      const result = await decodedToken(data.token);
+      const res = await decodedToken(data.token);
       let hasAccess = false;
 
-      if (result?.success) {
+      if (res?.success) {
 
-         if (await UserModel.findById(result._id)) {
+         if (await UserModel.findById(res._id)) {
             hasAccess = true;
          }
 
-         if (hasAccess && data.permittedRoles.includes(result.role)) {
+         if (hasAccess && data.permittedRoles.includes(res.role)) {
             sendReply(msg, {
+               code: 0,
                success: true,
-               message: "You have permission"
             });
          } else {
+            const code = 100004;
             sendReply(msg, {
+               code: code,
                success: false,
-               message: "You don't have permission"
+               error: errorCode[code],
             });
          }
       } else {
          sendReply(msg, {
+            code: 0,
             success: false,
-            message: result.message,
+            message: res.message,
          });
       }
 
-
    } catch (error) {
-      console.log("🚀 ~ file: auth.broker.js:94 ~ isAuthWithPermission ~ error:", error);
+      console.log("🚀 ~ file: auth.message.js:125 ~ isAuthWithRolesMsg ~ error:", error)
+      sendReply(msg, {
+         code: 0,
+         success: false,
+         error,
+      });
    }
 };
 
@@ -137,22 +157,27 @@ const loginMsg = async (data, msg) => {
       const password = data?.password;
 
       if (!result) {
+         const code = 100001;
          sendReply(msg, {
+            code: code,
             success: false,
-            message: 'User not found!',
+            error: errorCode[code],
          });
       }
 
       if (result && result?.status === 'inactive') {
+         const code = 100003;
          sendReply(msg, {
+            code: code,
             success: false,
-            message: 'User not active!',
+            error: errorCode[code],
          });
       }
 
       if (bcrypt.compareSync(password, result.password)) {
          const token = signInToken(result);
          sendReply(msg, {
+            code: 0,
             success: true,
             data: {
                token,
@@ -164,16 +189,18 @@ const loginMsg = async (data, msg) => {
          });
 
       } else {
+         const code = 100002;
          sendReply(msg, {
             success: false,
-            message: 'Invalid user or password!',
+            error: errorCode[code],
          });
       }
 
-   } catch (err) {
+   } catch (error) {
       sendReply(msg, {
+         code: 0,
          success: false,
-         message: err.message,
+         error: error,
       });
    }
 };

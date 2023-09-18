@@ -60,9 +60,6 @@ const tokenForVerify = (user) => {
 };
 
 
-
-
-
 module.exports = {
    signInToken,
    refreshToken,
