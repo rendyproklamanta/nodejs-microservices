@@ -1,8 +1,0 @@
-{
-   "200001": {
-      "message": "username is already added!"
-   },
-   "200002": {
-      "message": "update user failed"
-   }
-}

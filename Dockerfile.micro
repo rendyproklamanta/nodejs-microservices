@@ -7,18 +7,22 @@ RUN mkdir -p /app && chown -R node:node /app
 ARG SERVICE_NAME
 ENV PATH /app/node_modules/.bin:$PATH
 
-COPY . .
+COPY ./source .
 RUN find index.* -maxdepth 0 -name 'index.micro.js' -prune -o -exec rm -rf '{}' ';'
 
-COPY ./services/${SERVICE_NAME}/route.js ./route.js
-RUN find ./services/* -maxdepth 0 -name ${SERVICE_NAME} -prune -o -exec rm -rf '{}' ';'
+COPY ./source/services/${SERVICE_NAME}/route.js ./route.js
+RUN find ./source/services/* -maxdepth 0 -name ${SERVICE_NAME} -prune -o -exec rm -rf '{}' ';'
 
-RUN yarn install
+# Install Yarn
+RUN npm install -g yarn --force
+run yarn set version stable
+RUN yarn
 
 EXPOSE 5000
 
-RUN yarn test test/healthcheck.micro.test.js
-CMD ["node", "index.micro.js"]
+RUN NODE_OPTIONS='--experimental-vm-modules' jest healthcheck.micro.test.js --force-exit
+
+CMD ["node", "--loader", "esm-module-alias/loader", "--no-warnings", "index.micro.js"]
 
 # docker build --build-arg SERVICE_NAME=user -t user_service:latest -f Dockerfile.micro .
 # docker run -p 5002:5000 user_service

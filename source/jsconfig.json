@@ -1,0 +1,17 @@
+{
+   "compilerOptions": {
+      "module": "NodeNext", // <- Necessary to get imports with .js
+      "moduleResolution": "NodeNext", // <- Necessary to get imports with .js
+      "paths": {
+         "@root/*": [
+            "./*"
+         ],
+         "@services/*": [
+            "./services/*"
+         ],
+         "@config/*": [
+            "./config/*"
+         ],
+      },
+   }
+}

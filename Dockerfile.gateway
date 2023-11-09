@@ -1,26 +1,27 @@
-FROM node:16-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
 RUN mkdir -p /app && chown -R node:node /app
 ENV PATH /app/node_modules/.bin:$PATH
 
-COPY . .
-RUN find index.* -maxdepth 0 -name 'index.gateway.js' -prune -o -exec rm -rf '{}' ';'
-RUN mkdir -p services_tmp
+COPY ./source .
 
-COPY ./services/gateway ./services_tmp/gateway
+RUN rm -rf ./source/services
 
-RUN find ./services/* -maxdepth 0 -name 'gateway' -prune -o -exec rm -rf '{}' ';'
-RUN mv ./services_tmp/gateway ./services/gateway
+COPY ./source/services/gateway .
+COPY ./source/index/index.gateway.js ./index.gateway.js
 
-RUN yarn install
+# Install Yarn
+RUN npm install -g yarn --force
+run yarn set version stable
+RUN yarn
 
 EXPOSE 5000
 
-RUN yarn test test/healthcheck.gateway.test.js
+RUN NODE_OPTIONS='--experimental-vm-modules' jest healthcheck.gateway.test.js --force-exit
 
-CMD ["node", "index.gateway.js"]
+CMD ["node", "--loader", "esm-module-alias/loader", "--no-warnings", "index.gateway.js"]
 
 # docker build -t gateway_service:latest -f Dockerfile.gateway .
 # docker run -p 5000:5000 gateway_service

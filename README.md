@@ -28,6 +28,7 @@
 ## Build and run each service using docker-compose
 - <b>Local development</b>
 ```
+docker-compose -f docker-compose.prerequisite.yml up -d
 docker-compose -f docker-compose.local.yml up -d
 ```
 => http://localhost:5000
@@ -112,3 +113,6 @@ ngrok http 5000
 => using cloud VPS minimal 2gb
 => using gitlab runner for pipeline
 => edit "gitlab-ci.yml" to deploy each service
+
+Step:
+- Route > middleware > controller

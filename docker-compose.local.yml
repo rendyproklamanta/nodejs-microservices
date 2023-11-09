@@ -1,18 +1,22 @@
 version: "3.8"
 
 services:
+   local-development:
+      container_name: local-development
+      build:
+         dockerfile: Dockerfile.local
+         context: .
+      restart: "always"
+      ports:
+         - "5000:5000"
+      volumes:
+         - ./source:/app
+         - /app/node_modules
+      networks:
+         - local-bridge
+    
+networks:
+  local-bridge:
+    driver: bridge
 
-  local_development:
-    container_name: local_development
-    build:
-      dockerfile: Dockerfile
-      context: .
-    restart: "always"
-    command: 'yarn dev'
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./:/app
-      - /app/node_modules
-
-# docker-compose -f docker-compose.local.yml up -d
+# docker-compose -f docker-compose.local.yml up

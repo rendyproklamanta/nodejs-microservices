@@ -1,0 +1,6 @@
+// Message Broker Auth
+export const AUTH_PERMISSION_ROLE_MQ = 'AUTH_PERMISSION_ROLE_MQ';
+export const AUTH_ISADMIN_MQ = 'AUTH_ISADMIN_MQ';
+export const GENERATE_TOKEN_JWT_MQ = 'GENERATE_TOKEN_JWT_MQ';
+export const AUTH_READ_TOKEN_MQ = 'AUTH_READ_TOKEN_MQ';
+
