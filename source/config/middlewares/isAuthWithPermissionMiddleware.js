@@ -1,9 +1,7 @@
-import dotenv from 'dotenv';
-dotenv.config();
 import { correlationId, sendQueue } from '@config/broker.js';
 import { getToken } from '@root/services/auth/utils/getToken.js';
-import { AUTH_READ_TOKEN_MQ } from '../queue/authQueue.js';
-import { USER_FIND_ONE_MQ } from '../queue/userQueue.js';
+import { QUEUE_AUTH_READ_TOKEN_JWT } from '../queue/authQueue.js';
+import { QUEUE_USER_GET } from '../queue/userQueue.js';
 import { ROLE_TYPE_ACCOUNTING, ROLE_TYPE_ADMIN, ROLE_TYPE_USER, roleAccounting, roleAdmin, roleUser } from '@root/services/user/constants/permission.js';
 
 const isAuthWithPermissionMiddleware = (access) => async (req, res, next) => {
@@ -24,8 +22,8 @@ const isAuthWithPermissionMiddleware = (access) => async (req, res, next) => {
 
    // decoded token
    const payloadToken = token;
-   const queueToken = AUTH_READ_TOKEN_MQ;
-   const queueReplyToken = AUTH_READ_TOKEN_MQ + replyId;
+   const queueToken = QUEUE_AUTH_READ_TOKEN_JWT;
+   const queueReplyToken = QUEUE_AUTH_READ_TOKEN_JWT + replyId;
    const resultToken = await sendQueue(queueToken, payloadToken,replyId, queueReplyToken);
 
    if (!resultToken.success) {
@@ -37,8 +35,8 @@ const isAuthWithPermissionMiddleware = (access) => async (req, res, next) => {
 
    // get user by token
    const payloadFindOne = resultToken?.data?._id;
-   const queueFindOne = USER_FIND_ONE_MQ;
-   const queueReplyFindOne = USER_FIND_ONE_MQ + replyId;
+   const queueFindOne = QUEUE_USER_GET;
+   const queueReplyFindOne = QUEUE_USER_GET + replyId;
    const result = await sendQueue(queueFindOne, payloadFindOne,replyId, queueReplyFindOne);
 
    let permission = [];

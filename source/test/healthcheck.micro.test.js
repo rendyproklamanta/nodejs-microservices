@@ -1,6 +1,6 @@
 import request from "supertest";
 import express from "express";
-import index from "@root/index/index.micro";
+import index from "@root/index/index.micro.js";
 
 const app = express();
 

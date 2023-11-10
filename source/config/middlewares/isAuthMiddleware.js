@@ -1,5 +1,5 @@
 import { correlationId, sendQueue } from "../broker.js";
-import { AUTH_READ_TOKEN_MQ } from "../queue/authQueue.js";
+import { QUEUE_AUTH_READ_TOKEN_JWT } from "../queue/authQueue.js";
 import { getToken } from "../../services/auth/utils/getToken.js";
 
 export const isAuthMiddleware = async (req, res, next) => {
@@ -15,8 +15,8 @@ export const isAuthMiddleware = async (req, res, next) => {
 
       const replyId = correlationId(); // is unique
       const payload = token;
-      const queue = AUTH_READ_TOKEN_MQ;
-      const queueReply = AUTH_READ_TOKEN_MQ + replyId;
+      const queue = QUEUE_AUTH_READ_TOKEN_JWT;
+      const queueReply = QUEUE_AUTH_READ_TOKEN_JWT + replyId;
       const result = await sendQueue(queue, payload, replyId, queueReply);
 
       if (result.success) {

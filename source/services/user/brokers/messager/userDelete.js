@@ -2,27 +2,27 @@ import { sendReply } from "@root/config/broker.js";
 import UserModel from "../../models/user.model.js";
 import errorCode from "../../errorCode.js";
 
-export const userDeleteMsg = async (data, msg) => {
+export const userDeleteMsg = async (payload, msg) => {
    let code = 0;
    let success = true;
-   let result;
+   let data;
 
    try {
-      const query = data;
+      const query = payload;
 
-      result = await UserModel.findByIdAndDelete(query);
+      data = await UserModel.findByIdAndDelete(query);
 
-      if (!result) {
+      if (!data) {
          code = 200005;
          success = false;
-         result = {};
+         data = {};
       }
 
       sendReply(msg, {
          code: code,
          success: success,
          error: errorCode[code],
-         data: result,
+         data,
       });
 
    } catch (error) {

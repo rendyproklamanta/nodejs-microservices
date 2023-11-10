@@ -19,9 +19,4 @@ routes.forEach(route => {
    app.use(createProxyMiddleware(route.endpoint, route.proxy));
 });
 
-// Catch-all route for undefined routes
-app.all('*', (req, res) => {
-   res.status(404).send('Page not found');
-});
-
 export default app;

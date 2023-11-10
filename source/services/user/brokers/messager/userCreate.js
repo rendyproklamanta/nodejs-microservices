@@ -4,27 +4,27 @@ import UserModel from '../../models/user.model.js';
 import { sendReply } from '@root/config/broker.js';
 import errorCode from '../../errorCode.js';
 
-export const userCreateMsg = async (data, msg) => {
+export const userCreateMsg = async (payload, msg) => {
    let code = 0;
    let success = true;
    let isAdded = false;
-   let result;
+   let data;
 
    try {
 
-      const payload = {
-         ...data,
-         password: bcryptjs.hashSync(data.password),
+      const body = {
+         ...payload,
+         password: bcryptjs.hashSync(payload.password),
          role: ROLE_TYPE_USER,
       };
 
-      isAdded = await UserModel.findOne({ username: data.username });
+      isAdded = await UserModel.findOne({ username: payload.username });
       if (isAdded) {
          code = 200001;
          success = false;
       } else {
-         const scheme = new UserModel(payload);
-         result = await scheme.save();
+         const user = new UserModel(body);
+         data = await user.save();
          success = true;
       }
 
@@ -32,7 +32,7 @@ export const userCreateMsg = async (data, msg) => {
          code: code,
          success: success,
          error: errorCode[code],
-         data: result,
+         data,
       });
    } catch (error) {
       sendReply(msg, {

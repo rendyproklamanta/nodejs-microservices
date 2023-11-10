@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import { decrypt } from "@root/config/encryption.js";
 import { generateTokenJwt } from "../utils/generateTokenJwt.js";
 import jwt from 'jsonwebtoken';

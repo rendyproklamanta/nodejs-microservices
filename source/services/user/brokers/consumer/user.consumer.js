@@ -1,9 +1,10 @@
 import { createChannel } from '@config/broker.js';
-import { USER_CREATE_MQ, USER_FIND_ONE_MQ, USER_LOGIN_MQ, USER_UPDATE_MQ } from '@root/config/queue/userQueue.js';
+import { QUEUE_USER_CREATE, QUEUE_USER_GET, QUEUE_USER_GET_ALL, QUEUE_USER_LOGIN, QUEUE_USER_UPDATE } from '@root/config/queue/userQueue.js';
 import { userCreateMsg } from '../messager/userCreate.js';
 import { userUpdateMsg } from '../messager/userUpdate.js';
 import { userLoginMsg } from '../messager/userLogin.js';
-import { userFindOneMsg } from '../messager/userFindOne.js';
+import { userGetMsg } from '../messager/userGet.js';
+import { userGetAllMsg } from '../messager/userGetAll.js';
 
 let channel;
 
@@ -13,53 +14,64 @@ const userConsumer = async () => {
    try {
 
       // User Create
-      await channel.assertQueue(USER_CREATE_MQ);
+      await channel.assertQueue(QUEUE_USER_CREATE);
       channel.consume(
-         USER_CREATE_MQ,
+         QUEUE_USER_CREATE,
          (msg) => {
-            const data = JSON.parse(msg.content);
-            console.log("[=>>] Receive USER_CREATE_MQ :", data);
-            userCreateMsg(data, msg);
+            const payload = JSON.parse(msg.content);
+            console.log("[=>>] Receive QUEUE_USER_CREATE :", payload);
+            userCreateMsg(payload, msg);
             channel.ack(msg);
          },
       );
 
       // User Update
-      await channel.assertQueue(USER_UPDATE_MQ);
+      await channel.assertQueue(QUEUE_USER_UPDATE);
       channel.consume(
-         USER_UPDATE_MQ,
+         QUEUE_USER_UPDATE,
          (msg) => {
-            const data = JSON.parse(msg.content);
-            console.log("[=>>] Receive USER_UPDATE_MQ :", data);
-            userUpdateMsg(data, msg);
+            const payload = JSON.parse(msg.content);
+            console.log("[=>>] Receive QUEUE_USER_UPDATE :", payload);
+            userUpdateMsg(payload, msg);
             channel.ack(msg);
          },
       );
 
       // User login
-      await channel.assertQueue(USER_LOGIN_MQ);
+      await channel.assertQueue(QUEUE_USER_LOGIN);
       channel.consume(
-         USER_LOGIN_MQ,
+         QUEUE_USER_LOGIN,
          (msg) => {
-            const data = JSON.parse(msg.content);
-            console.log("[=>>] Receive USER_LOGIN_MQ :", data);
-            userLoginMsg(data, msg);
+            const payload = JSON.parse(msg.content);
+            console.log("[=>>] Receive QUEUE_USER_LOGIN :", payload);
+            userLoginMsg(payload, msg);
             channel.ack(msg);
          },
       );
 
-      // User Find One
-      await channel.assertQueue(USER_FIND_ONE_MQ);
+      // User Get One
+      await channel.assertQueue(QUEUE_USER_GET);
       channel.consume(
-         USER_FIND_ONE_MQ,
+         QUEUE_USER_GET,
          (msg) => {
-            const data = JSON.parse(msg.content);
-            console.log("[=>>] Receive USER_FIND_ONE_MQ :", data);
-            userFindOneMsg(data, msg);
+            const payload = JSON.parse(msg.content);
+            console.log("[=>>] Receive QUEUE_USER_GET :", payload);
+            userGetMsg(payload, msg);
             channel.ack(msg);
          },
       );
 
+      // User Get All
+      await channel.assertQueue(QUEUE_USER_GET_ALL);
+      channel.consume(
+         QUEUE_USER_GET_ALL,
+         (msg) => {
+            const payload = JSON.parse(msg.content);
+            console.log("[=>>] Receive QUEUE_USER_GET_ALL :", payload);
+            userGetAllMsg(payload, msg);
+            channel.ack(msg);
+         },
+      );
 
       console.log("[ User Service ] Waiting for messages broker...");
       return channel;

@@ -1,4 +1,4 @@
-FROM node:16-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -8,10 +8,15 @@ ARG SERVICE_NAME
 ENV PATH /app/node_modules/.bin:$PATH
 
 COPY ./source .
-RUN find index.* -maxdepth 0 -name 'index.micro.js' -prune -o -exec rm -rf '{}' ';'
 
+# Remove unnecessary directory
+RUN rm -rf ./source/services
+RUN rm -rf ./source/index
+
+# Copy the required directory
+COPY ./source/services/${SERVICE_NAME} .
 COPY ./source/services/${SERVICE_NAME}/route.js ./route.js
-RUN find ./source/services/* -maxdepth 0 -name ${SERVICE_NAME} -prune -o -exec rm -rf '{}' ';'
+COPY ./source/index/index.micro.js ./index.micro.js
 
 # Install Yarn
 RUN npm install -g yarn --force

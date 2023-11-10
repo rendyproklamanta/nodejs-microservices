@@ -2,22 +2,23 @@ import { sendReply } from "@root/config/broker.js";
 import UserModel from "../../models/user.model.js";
 import errorCode from "../../errorCode.js";
 
-export const userUpdateMsg = async (data, msg) => {
+export const userUpdateMsg = async (payload, msg) => {
    let code = 0;
    let success = true;
+   let data;
 
    try {
 
-      const query = data.id;
-      const payload = data;
+      const query = payload.id;
+      const payload = payload;
       const options = {
          new: true,
          upsert: true,
       };
 
-      const result = await UserModel.findByIdAndUpdate(query, payload, options);
+      data = await UserModel.findByIdAndUpdate(query, payload, options);
 
-      if (!result) {
+      if (!data) {
          code = 200002;
          success = false;
       }
@@ -26,7 +27,7 @@ export const userUpdateMsg = async (data, msg) => {
          code: code,
          success: success,
          error: errorCode[code],
-         data: result,
+         data,
       });
 
    } catch (error) {

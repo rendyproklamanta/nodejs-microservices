@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import { createChannel } from "@config/broker.js";
-import { AUTH_ISADMIN_MQ, AUTH_READ_TOKEN_MQ } from '@config/queue/authQueue.js';
+import { QUEUE_AUTH_ISADMIN, QUEUE_AUTH_READ_TOKEN_JWT } from '@config/queue/authQueue.js';
 import { readTokenMsg } from '../messager/readToken.js';
 import { isAdminMsg } from '../messager/isAdmin.js';
 import { generateTokenMsg } from '../messager/generateToken.js';
@@ -12,35 +12,35 @@ const authConsumer = async () => {
    try {
 
       // Generate Token
-      await channel.assertQueue('GENERATE_TOKEN_JWT_MQ');
+      await channel.assertQueue('QUEUE_AUTH_GENERATE_TOKEN_JWT');
       channel.consume(
-         'GENERATE_TOKEN_JWT_MQ',
+         'QUEUE_AUTH_GENERATE_TOKEN_JWT',
          (msg) => {
-            const data = JSON.parse(msg.content);
-            generateTokenMsg(data, msg, 'GENERATE_TOKEN_JWT_MQ');
+            const payload = JSON.parse(msg.content);
+            generateTokenMsg(payload, msg, 'QUEUE_AUTH_GENERATE_TOKEN_JWT');
             channel.ack(msg);
          },
       );
 
 
       // Check isadmin
-      await channel.assertQueue(AUTH_ISADMIN_MQ);
+      await channel.assertQueue(QUEUE_AUTH_ISADMIN);
       channel.consume(
-         AUTH_ISADMIN_MQ,
+         QUEUE_AUTH_ISADMIN,
          (msg) => {
-            const data = JSON.parse(msg.content);
-            isAdminMsg(data, msg);
+            const payload = JSON.parse(msg.content);
+            isAdminMsg(payload, msg);
             channel.ack(msg);
          },
       );
 
       // Login
-      await channel.assertQueue(AUTH_READ_TOKEN_MQ);
+      await channel.assertQueue(QUEUE_AUTH_READ_TOKEN_JWT);
       channel.consume(
-         AUTH_READ_TOKEN_MQ,
+         QUEUE_AUTH_READ_TOKEN_JWT,
          (msg) => {
-            const data = JSON.parse(msg.content);
-            readTokenMsg(data, msg);
+            const payload = JSON.parse(msg.content);
+            readTokenMsg(payload, msg);
             channel.ack(msg);
          },
       );

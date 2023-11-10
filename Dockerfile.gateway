@@ -7,8 +7,10 @@ ENV PATH /app/node_modules/.bin:$PATH
 
 COPY ./source .
 
+# Remove unnecessary directory
 RUN rm -rf ./source/services
 
+# Copy the required directory
 COPY ./source/services/gateway .
 COPY ./source/index/index.gateway.js ./index.gateway.js
 

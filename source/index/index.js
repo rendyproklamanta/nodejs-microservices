@@ -16,20 +16,15 @@ app.get('/healthcheck', (req, res) => {
    res.send({});
 });
 
-// routes.forEach(route => {
-//    app.use(route.service);
-// });
-
-for (const route of routes) {
-   const routePath = path.resolve(route.service);
-   const { default: middleware } = await import(routePath);
+async function importRoutes() {
+   for (const route of routes) {
+      const routePath = path.resolve(route.service);
+      const { default: middleware } = await import(routePath);
+   
+      app.use(middleware);
+   }
+}
  
-   app.use(middleware);
- }
-
-// Catch-all route for undefined routes
-app.all('*', (req, res) => {
-   res.status(404).send('Page not found');
-});
+importRoutes();
 
 export default app;

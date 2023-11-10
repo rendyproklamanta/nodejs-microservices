@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import { createTransport } from 'nodemailer';
 
 const sendEmail = (body, res, message) => {

@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import { sendReply } from '@config/broker.js';
 import UserModel from '../models/user.model.js';
 import bcryptjs from 'bcryptjs';

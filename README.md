@@ -28,8 +28,8 @@
 ## Build and run each service using docker-compose
 - <b>Local development</b>
 ```
-docker-compose -f docker-compose.prerequisite.yml up -d
-docker-compose -f docker-compose.local.yml up -d
+docker-compose -f docker-compose.prerequisite.yml up -d --force-recreate
+docker-compose -f docker-compose.local.yml up --force-recreate
 ```
 => http://localhost:5000
 <br>
@@ -96,7 +96,7 @@ ngrok http 5000
 
 - <b>Checkout order Flow</b>
 == Save user if not registered ==
-<i>queue</i>: USER_CREATE_MQ
+<i>queue</i>: QUEUE_USER_CREATE
 <i>db</i> :  doc.user
 == Save product stock ==
 <i>queue</i>: PRODUCT_CREATE_MQ

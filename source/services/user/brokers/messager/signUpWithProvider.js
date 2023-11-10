@@ -1,47 +1,38 @@
 import { generateTokenJwt } from "@root/services/auth/utils/generateTokenJwt.js";
 import UserModel from "../../models/user.model.js";
+import { sendReply } from "@root/config/broker.js";
+import errorCode from "../../errorCode.js";
 
-export const signUpWithProvider = async (req, res) => {
+export const signUpWithProvider = async (payload, msg) => {
+   let code = 0;
+   let success = true;
+   let isAdded = false;
+   let data;
+   let accessToken;
+
    try {
-      const isAdded = await UserModel.findOne({ email: req.body.email });
+      isAdded = await UserModel.findOne({ email: payload.email });
       if (isAdded) {
-         const token = generateTokenJwt(isAdded);
-         return res.send({
-            success: true,
-            data: {
-               token,
-               _id: isAdded._id,
-               name: isAdded.name,
-               email: isAdded.email,
-               address: isAdded.address,
-               phone: isAdded.phone,
-               image: isAdded.image,
-            }
-         });
+         code = 200001;
+         success = false;
       } else {
-         const newUser = new UserModel({
-            name: req.body.name,
-            email: req.body.email,
-            image: req.body.image,
-         });
-
-         const user = await newUser.save();
-         const token = generateTokenJwt(user);
-         return res.send({
-            success: true,
-            data: {
-               token,
-               _id: user._id,
-               name: user.name,
-               email: user.email,
-               image: user.image,
-            }
-         });
+         const user = new UserModel(payload);
+         data = await user.save();
+         accessToken = generateTokenJwt(data);
       }
-   } catch (err) {
-      return res.status(500).send({
+
+      sendReply(msg, {
+         code: code,
+         success: success,
+         error: errorCode[code],
+         data,
+         accessToken,
+      });
+   } catch (error) {
+      sendReply(msg, {
+         code: 0,
          success: false,
-         message: err.message,
+         error,
       });
    }
 };

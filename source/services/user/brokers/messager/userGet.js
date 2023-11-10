@@ -2,29 +2,26 @@ import { sendReply } from "@root/config/broker.js";
 import UserModel from "../../models/user.model.js";
 import errorCode from "../../errorCode.js";
 
-export const userFindOneMsg = async (data, msg) => {
+export const userGetMsg = async (payload, msg) => {
    let code = 0;
    let success = true;
-   let result;
+   let data;
 
    try {
-      const query = { 
-         _id: data 
-      };
+      const exclude = '-password'; // exclude property
 
-      result = await UserModel.findOne(query);
+      data = await UserModel.findById(payload, exclude);
 
-      if (!result) {
+      if (!data) {
          code = 200005;
          success = false;
-         result = {};
       }
 
       sendReply(msg, {
          code: code,
          success: success,
          error: errorCode[code],
-         data: result,
+         data,
       });
 
    } catch (error) {

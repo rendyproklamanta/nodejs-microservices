@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import Cryptr from 'cryptr';
 
 const cryptr = new Cryptr(

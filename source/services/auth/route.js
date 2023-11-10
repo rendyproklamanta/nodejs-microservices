@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import { login, logout, verifyEmailAddress, forgetPassword, changePassword, resetPassword, tokenData, testCreateUserFromAuth } from '@services/auth/controllers/auth.controller.js';
+import { login, logout, tokenData, testCreateUserFromAuth } from '@services/auth/controllers/auth.controller.js';
 
-import { passwordVerificationLimit, emailVerificationLimit } from '@config/others.js';
 import { authCreateSchema } from '@services/auth/middlewares/auth.validator.js';
 import { validate } from '@config/validate.js';
 import { isAuthMiddleware } from '@root/config/middlewares/isAuthMiddleware.js';
@@ -21,11 +20,6 @@ router.get(`/`, (_, res) => {
    return defaultRes(res);
 });
 
-//verify email
-router.post(`${ENDPOINT}/vemail/erify`, 
-   emailVerificationLimit,  // middleware
-   verifyEmailAddress // controller
-);
 
 //login a user
 router.post(`${ENDPOINT}/login`, 
@@ -36,22 +30,6 @@ router.post(`${ENDPOINT}/login`,
 //logout a user
 router.get(`${ENDPOINT}/logout`,
    logout // controller
-);
-
-//forget-password
-router.put(`${ENDPOINT}/password/forget`, 
-   passwordVerificationLimit, // middleware
-   forgetPassword // controller
-);
-
-//reset-password
-router.put(`${ENDPOINT}/password/reset`, 
-   resetPassword // controller
-);
-
-//change password
-router.post(`${ENDPOINT}/password/change`, 
-   changePassword // controller
 );
 
 //get

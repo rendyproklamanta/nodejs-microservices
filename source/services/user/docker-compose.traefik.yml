@@ -13,8 +13,8 @@ services:
       - "traefik.http.routers.user.tls=true"
       - "traefik.http.routers.user.tls.certresolver=letsencrypt"
     networks:
-      - "traefik-public"
+      - "traefik-network"
 
 networks:
-  traefik-public:
+  traefik-network:
     external: true

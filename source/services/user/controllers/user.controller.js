@@ -1,9 +1,6 @@
-import bcryptjs from 'bcryptjs';
-import UserModel from '../models/user.model.js';
 import { correlationId, sendQueue } from '@config/broker.js';
 import { userConsumer } from '../brokers/consumer/user.consumer.js';
-import { permissionUserList } from '../constants/permission.js';
-import { USER_CREATE_MQ, USER_DELETE_MQ, USER_UPDATE_MQ } from '@root/config/queue/userQueue.js';
+import { QUEUE_USER_CREATE, QUEUE_USER_DELETE, QUEUE_USER_GET_ALL, QUEUE_USER_GET, QUEUE_USER_UPDATE, QUEUE_USER_VERIFY_EMAIL, QUEUE_USER_FORGET_PASSWORD, QUEUE_USER_RESET_PASSWORD, QUEUE_USER_CHANGE_PASSWORD, QUEUE_USER_SIGNUP_PROVIDER } from '@root/config/queue/userQueue.js';
 import { responseCustom } from '@root/config/others.js';
 
 (async () => {
@@ -21,8 +18,8 @@ const createUser = async (req, res) => {
          ...req.body,
       };
 
-      const queue = USER_CREATE_MQ;
-      const queueReply = USER_CREATE_MQ + replyId;
+      const queue = QUEUE_USER_CREATE;
+      const queueReply = QUEUE_USER_CREATE + replyId;
       const result = await sendQueue(queue, payload, replyId, queueReply);
 
       return res.send(responseCustom(result));
@@ -44,8 +41,8 @@ const updateUser = async (req, res) => {
          id: req.params.id
       };
 
-      const queue = USER_UPDATE_MQ;
-      const queueReply = USER_UPDATE_MQ + replyId;
+      const queue = QUEUE_USER_UPDATE;
+      const queueReply = QUEUE_USER_UPDATE + replyId;
       const result = await sendQueue(queue, payload, replyId, queueReply);
 
       return res.send(result);
@@ -65,8 +62,8 @@ const deleteUser = async (req, res) => {
    try {
       const replyId = correlationId(); // is unique
       const payload = req.params.id;
-      const queue = USER_DELETE_MQ;
-      const queueReply = USER_DELETE_MQ + replyId;
+      const queue = QUEUE_USER_DELETE;
+      const queueReply = QUEUE_USER_DELETE + replyId;
       const result = await sendQueue(queue, payload, replyId, queueReply);
 
       return res.send(result);
@@ -85,12 +82,13 @@ const deleteUser = async (req, res) => {
 // ! ==========================================
 const getAllUsers = async (req, res) => {
    try {
-      const exclude = '-password'; // exclude property
-      const data = await UserModel.find({}, exclude).sort({ _id: -1 });
-      return res.status(200).send({
-         success: true,
-         data
-      });
+      const replyId = correlationId(); // is unique
+      const payload = req.params.id;
+      const queue = QUEUE_USER_GET_ALL;
+      const queueReply = QUEUE_USER_GET_ALL + replyId;
+      const result = await sendQueue(queue, payload, replyId, queueReply);
+
+      return res.send(result);
 
    } catch (err) {
       return res.status(500).send({
@@ -106,17 +104,125 @@ const getAllUsers = async (req, res) => {
 const getUserById = async (req, res) => {
 
    try {
-      const data = await UserModel.findById(req.params.id);
+      const replyId = correlationId(); // is unique
+      const payload = req.params.id;
+      
+      const queue = QUEUE_USER_GET;
+      const queueReply = QUEUE_USER_GET + replyId;
+      const result = await sendQueue(queue, payload, replyId, queueReply);
 
-      return res.status(200).send({
-         success: true,
-         data
-      });
+      return res.send(result);
    } catch (err) {
       console.log("🚀 ~ file: user.controller.js:118 ~ getUserById ~ err:", err);
       return res.status(500).send({
          success: false,
          message: err.message,
+      });
+   }
+};
+
+// ! ==========================================
+// ! Controller
+// ! ==========================================
+const verifyEmailAddress = async (req, res) => {
+   try {
+      const replyId = correlationId(); // is unique
+      const payload = req.body;
+      const queue = QUEUE_USER_VERIFY_EMAIL;
+      const queueReply = QUEUE_USER_VERIFY_EMAIL + replyId;
+      const result = await sendQueue(queue, payload, replyId, queueReply);
+
+      return res.send(result);
+
+   } catch (err) {
+      return res.status(401).send({
+         success: false,
+         message: 'Get Token Error',
+      });
+   }
+};
+
+
+// ! ==========================================
+// ! Controller
+// ! ==========================================
+const forgetPassword = async (req, res) => {
+   try {
+      const replyId = correlationId(); // is unique
+      const payload = req.body;
+      const queue = QUEUE_USER_FORGET_PASSWORD;
+      const queueReply = QUEUE_USER_FORGET_PASSWORD + replyId;
+      const result = await sendQueue(queue, payload, replyId, queueReply);
+
+      return res.send(result);
+
+   } catch (err) {
+      return res.status(401).send({
+         success: false,
+         message: 'Get Token Error',
+      });
+   }
+};
+
+// ! ==========================================
+// ! Controller
+// ! ==========================================
+const resetPassword = async (req, res) => {
+   try {
+      const replyId = correlationId(); // is unique
+      const payload = req.body;
+      const queue = QUEUE_USER_RESET_PASSWORD;
+      const queueReply = QUEUE_USER_RESET_PASSWORD + replyId;
+      const result = await sendQueue(queue, payload, replyId, queueReply);
+
+      return res.send(result);
+
+   } catch (err) {
+      return res.status(401).send({
+         success: false,
+         message: 'Get Token Error',
+      });
+   }
+};
+
+// ! ==========================================
+// ! Controller
+// ! ==========================================
+const changePassword = async (req, res) => {
+   try {
+      const replyId = correlationId(); // is unique
+      const payload = req.body;
+      const queue = QUEUE_USER_CHANGE_PASSWORD;
+      const queueReply = QUEUE_USER_CHANGE_PASSWORD + replyId;
+      const result = await sendQueue(queue, payload, replyId, queueReply);
+
+      return res.send(result);
+
+   } catch (err) {
+      return res.status(401).send({
+         success: false,
+         message: 'Get Token Error',
+      });
+   }
+};
+
+// ! ==========================================
+// ! Controller
+// ! ==========================================
+const signUpWithProvider = async (req, res) => {
+   try {
+      const replyId = correlationId(); // is unique
+      const payload = req.body;
+      const queue = QUEUE_USER_SIGNUP_PROVIDER;
+      const queueReply = QUEUE_USER_SIGNUP_PROVIDER + replyId;
+      const result = await sendQueue(queue, payload, replyId, queueReply);
+
+      return res.send(result);
+
+   } catch (err) {
+      return res.status(401).send({
+         success: false,
+         message: 'Get Token Error',
       });
    }
 };
@@ -127,4 +233,10 @@ export {
    getAllUsers,
    getUserById,
    deleteUser,
+
+   signUpWithProvider,
+   verifyEmailAddress,
+   forgetPassword,
+   changePassword,
+   resetPassword,
 };

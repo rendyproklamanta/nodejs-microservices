@@ -1,12 +1,12 @@
 import dotenv from 'dotenv';
 dotenv.config();
-import { correlationId, sendQueue, sendQueueOnly } from '@config/broker.js';
+import { correlationId, sendQueue } from '@config/broker.js';
 import { encrypt } from '@config/encryption.js';
-import { USER_CREATE_MQ, USER_LOGIN_MQ } from '@config/queue/userQueue.js';
+import { QUEUE_USER_CREATE, QUEUE_USER_LOGIN } from '@config/queue/userQueue.js';
 import { authConsumer } from '../brokers/consumer/auth.consumer.js';
 import { getToken } from '../utils/getToken.js';
 import { generateTokenJwt } from '../utils/generateTokenJwt.js';
-import { AUTH_READ_TOKEN_MQ } from '@root/config/queue/authQueue.js';
+import { QUEUE_AUTH_READ_TOKEN_JWT } from '@root/config/queue/authQueue.js';
 import { responseCustom } from '@root/config/others.js';
 
 (async () => {
@@ -21,8 +21,8 @@ const testCreateUserFromAuth = async (req, res) => {
          ...req.body,
       };
 
-      const queue = USER_CREATE_MQ;
-      const queueReply = USER_CREATE_MQ + replyId;
+      const queue = QUEUE_USER_CREATE;
+      const queueReply = QUEUE_USER_CREATE + replyId;
       const result = await sendQueue(queue, payload, replyId, queueReply);
 
       return res.send(result);
@@ -45,8 +45,8 @@ const login = async (req, res) => {
       };
 
       const replyId = correlationId();
-      const queue = USER_LOGIN_MQ;
-      const queueReply = USER_LOGIN_MQ + replyId;
+      const queue = QUEUE_USER_LOGIN;
+      const queueReply = QUEUE_USER_LOGIN + replyId;
       const result = await sendQueue(queue, payload, replyId, queueReply);
 
       if (!result.success) {
@@ -136,145 +136,13 @@ const logout = (req, res) => {
 const tokenData = async (req, res, next) => {
    try {
       const token = await getToken(req);
-
       const replyId = correlationId(); // is unique
       const payload = token;
-      const queue = AUTH_READ_TOKEN_MQ;
-      const queueReply = AUTH_READ_TOKEN_MQ + replyId;
+      const queue = QUEUE_AUTH_READ_TOKEN_JWT;
+      const queueReply = QUEUE_AUTH_READ_TOKEN_JWT + replyId;
       const result = await sendQueue(queue, payload, replyId, queueReply);
 
       return res.send(result);
-   } catch (err) {
-      return res.status(401).send({
-         success: false,
-         message: 'Get Token Error',
-      });
-   }
-};
-
-// ! ==========================================
-// ! Controller
-// ! ==========================================
-const verifyEmailAddress = async (req, res) => {
-   try {
-      const replyId = correlationId(); // is unique
-      const token = await getToken(req);
-
-      const payload = {
-         token: token,
-      };
-
-      const queue = AUTH_READ_TOKEN_MQ;
-      const queueReply = AUTH_READ_TOKEN_MQ + replyId;
-      const result = await sendQueue(queue, payload, replyId, queueReply);
-
-      return res.send(result);
-
-   } catch (err) {
-      return res.status(401).send({
-         success: false,
-         message: 'Get Token Error',
-      });
-   }
-};
-
-
-// ! ==========================================
-// ! Controller
-// ! ==========================================
-const forgetPassword = async (req, res) => {
-   try {
-      const replyId = correlationId(); // is unique
-      const token = await getToken(req);
-
-      const payload = {
-         token: token,
-      };
-
-      const queue = AUTH_READ_TOKEN_MQ;
-      const queueReply = AUTH_READ_TOKEN_MQ + replyId;
-      const result = await sendQueue(queue, payload, replyId, queueReply);
-
-      return res.send(result);
-
-   } catch (err) {
-      return res.status(401).send({
-         success: false,
-         message: 'Get Token Error',
-      });
-   }
-};
-
-// ! ==========================================
-// ! Controller
-// ! ==========================================
-const resetPassword = async (req, res) => {
-   try {
-      const replyId = correlationId(); // is unique
-      const token = await getToken(req);
-
-      const payload = {
-         token: token,
-      };
-
-      const queue = AUTH_READ_TOKEN_MQ;
-      const queueReply = AUTH_READ_TOKEN_MQ + replyId;
-      const result = await sendQueue(queue, payload, replyId, queueReply);
-
-      return res.send(result);
-
-   } catch (err) {
-      return res.status(401).send({
-         success: false,
-         message: 'Get Token Error',
-      });
-   }
-};
-
-// ! ==========================================
-// ! Controller
-// ! ==========================================
-const changePassword = async (req, res) => {
-   try {
-      const replyId = correlationId(); // is unique
-      const token = await getToken(req);
-
-      const payload = {
-         token: token,
-      };
-
-      const queue = AUTH_READ_TOKEN_MQ;
-      const queueReply = AUTH_READ_TOKEN_MQ + replyId;
-      const result = await sendQueue(queue, payload, replyId, queueReply);
-
-      return res.send(result);
-
-   } catch (err) {
-      return res.status(401).send({
-         success: false,
-         message: 'Get Token Error',
-      });
-   }
-};
-
-// ! ==========================================
-// ! Controller
-// ! ==========================================
-const signUpWithProvider = async (req, res) => {
-   try {
-      const replyId = correlationId(); // is unique
-      const token = await getToken(req);
-
-      const payload = {
-         token: token,
-      };
-
-      const queue = AUTH_READ_TOKEN_MQ;
-      const queueReply = AUTH_READ_TOKEN_MQ + replyId;
-      const result = await sendQueue(queue, payload, replyId, queueReply);
-
-      return res.send(result);
-
    } catch (err) {
       return res.status(401).send({
          success: false,
@@ -288,9 +156,4 @@ export {
    login,
    logout,
    tokenData,
-   signUpWithProvider,
-   verifyEmailAddress,
-   forgetPassword,
-   changePassword,
-   resetPassword,
 };

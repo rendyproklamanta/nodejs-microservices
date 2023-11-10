@@ -6,7 +6,8 @@ services:
       build:
          dockerfile: Dockerfile.local
          context: .
-      restart: "always"
+      restart: always
+      command: yarn dev
       ports:
          - "5000:5000"
       volumes:

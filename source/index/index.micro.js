@@ -1,5 +1,7 @@
 import express from "express";
-import expressMiddleware from "@config/middlewares/express.middleware";
+// Load route for each microservices
+import route from "@root/route.js";
+import expressMiddleware from "@root/config/middlewares/expressMiddleware.js";
 
 const app = express();
 
@@ -10,13 +12,6 @@ app.get('/healthcheck', (req, res) => {
    res.send({});
 });
 
-// Load route for each microservices
-import route from "./route";
 app.use("/", route);
-
-// Catch-all route for undefined routes
-app.all('*', (req, res) => {
-   res.status(404).send('Page not found');
-});
 
 export default app;

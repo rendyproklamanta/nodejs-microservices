@@ -1,11 +1,12 @@
 import { Router } from 'express';
-import { createUser, updateUser, deleteUser, getUserById, getAllUsers } from '@services/user/controllers/user.controller.js';
+import { createUser, updateUser, deleteUser, getUserById, getAllUsers, forgetPassword, resetPassword, changePassword, verifyEmailAddress } from '@services/user/controllers/user.controller.js';
 import { teamCreateGenerate, teamCreate } from '@services/user/controllers/team.controller.js';
 import { validate } from '@config/validate.js';
 import { userCreateSchema, userUpdateSchema, userParamsIdSchema } from '@services/user/middlewares/user.validator.js';
 import { PERMISSION_USER_DELETE, PERMISSION_USER_GET, PERMISSION_USER_GET_ALL, PERMISSION_USER_UPDATE } from './constants/permission.js';
 import isAuthWithPermissionMiddleware from '@root/config/middlewares/isAuthWithPermissionMiddleware.js';
 import { isApiKey } from '../auth/middlewares/isApiKey.js';
+import { emailVerificationLimit, passwordVerificationLimit } from '@root/config/others.js';
 
 const router = Router();
 const ENDPOINT = '/api/users';
@@ -43,7 +44,7 @@ router.delete(`${ENDPOINT}/:id`,
 
 //get by id
 router.get(`${ENDPOINT}/:id`,
-   isAuthWithPermissionMiddleware(PERMISSION_USER_GET), // middleware
+   // isAuthWithPermissionMiddleware(PERMISSION_USER_GET), // middleware
    validate(userParamsIdSchema), // validator
    getUserById // controller
 );
@@ -65,6 +66,28 @@ router.post(`${ENDPOINT}`,
 router.get(`${ENDPOINT}/generate/:role`,
    isApiKey,
    teamCreateGenerate,
+);
+
+//verify email
+router.post(`${ENDPOINT}/vemail/erify`, 
+   emailVerificationLimit, // middleware
+   verifyEmailAddress // controller
+);
+
+//forget-password
+router.put(`${ENDPOINT}/password/forget`, 
+   passwordVerificationLimit, // middleware
+   forgetPassword // controller
+);
+
+//reset-password
+router.put(`${ENDPOINT}/password/reset`, 
+   resetPassword // controller
+);
+
+//change password
+router.post(`${ENDPOINT}/password/change`, 
+   changePassword // controller
 );
 
 export default router;

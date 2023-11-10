@@ -32,10 +32,15 @@ const expressMiddleware = (app, express) => {
       res.status(400).send({ message: err.message });
    });
 
-   const PORT = process.env.PORT || 5000;
-   app.listen(PORT, () =>
-      console.log(`server running on port http://localhost:${PORT}`)
-   );
+   const PORT = process.env.PORT_GATEWAY_SERVICE || 5000;
+
+   try {
+      app.listen(PORT, () =>
+         console.log(`[ Server ] running on http://localhost:${PORT} || use port 5001-500x for microservice`)
+      );
+   } catch (error) {
+      console.error(`[ Server ] Failed to start on port ${PORT}. Error: ${error.message}`);
+   }
 
 };
 

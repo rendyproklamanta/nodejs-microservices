@@ -5,9 +5,12 @@ services:
    rabbitmq:
       image: rabbitmq:3.8-management-alpine
       container_name: rabbitmq
+      restart: always
+      env_file:
+         - .env
       environment:
-         - RABBITMQ_DEFAULT_USER=adminmq
-         - RABBITMQ_DEFAULT_PASS=123qwe
+         - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+         - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
       ports:
          - 15672:15672
          - 5672:5672
@@ -17,10 +20,14 @@ services:
    mongodb:
       container_name: mongodb
       image: mongo:latest
+      restart: always
+      env_file:
+         - .env
       environment:
+         - TZ=${TZ}
          - MONGO_INITDB_DATABASE=admin
-         - MONGO_INITDB_ROOT_USERNAME=admindb
-         - MONGO_INITDB_ROOT_PASSWORD=123qwe
+         - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USER}
+         - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASS}
       ports:
          - 27017:27017
       volumes:
@@ -28,8 +35,31 @@ services:
       networks:
          - local-bridge
 
+   mongodb-cron-backup:
+      image: randyproxz/mongodb-cron-backup
+      container_name: mongodb-cron-backup
+      depends_on:
+         - mongodb
+      restart: always
+      volumes:
+         - ./data/backup:/backup
+      env_file:
+         - .env
+      environment:
+         - TZ=${TZ}
+         - MONGO_HOST=${MONGODB_HOST}
+         - MONGO_PORT=${MONGODB_PORT}
+         - MONGO_USER=${MONGODB_USER}
+         - MONGO_DB=${MONGODB_DB}
+         - MONGO_PASS=${MONGODB_PASS}
+         - CRON_TIME=${MONGODB_CRON_BACKUP_TIME}
+         - INIT_BACKUP=${MONGODB_INIT_BACKUP}
+         - MAX_BACKUPS=${MONGODB_MAX_BACKUPS}
+      networks:
+         - local-bridge
+
 networks:
   local-bridge:
     driver: bridge
 
-# docker-compose up -d
+# docker compose -f docker-compose.prerequisite.yml up -d --force-recreate

@@ -2,9 +2,9 @@ import { sendReply } from "@root/config/broker.js";
 import { decodedToken } from "../../utils/decodedToken.js";
 import errorCode from '../../errorCode.js';
 
-export const readTokenMsg = async (data, msg) => {
+export const readTokenMsg = async (payload, msg) => {
    try {
-      const res = await decodedToken(data);
+      const res = await decodedToken(payload);
       if (res?.success) {
          sendReply(msg, {
             code: 0,

@@ -1,11 +1,11 @@
 import { correlationId, sendQueue } from "@root/config/broker.js";
-import { GENERATE_TOKEN_JWT_MQ } from "@root/config/queue/authQueue.js";
+import { QUEUE_AUTH_GENERATE_TOKEN_JWT } from "@root/config/queue/authQueue.js";
 
 export const generateTokenJwt = async (payload) => {
    try {
       const replyId = correlationId();
-      const queue = GENERATE_TOKEN_JWT_MQ;
-      const queueReply = GENERATE_TOKEN_JWT_MQ + replyId;
+      const queue = QUEUE_AUTH_GENERATE_TOKEN_JWT;
+      const queueReply = QUEUE_AUTH_GENERATE_TOKEN_JWT + replyId;
       const result = await sendQueue(queue, payload, replyId, queueReply);
 
       return result;

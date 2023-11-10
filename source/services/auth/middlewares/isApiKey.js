@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 export const isApiKey = async (req, res, next) => {
    try {
       const headerApiKey = req.header("x-api-key");
