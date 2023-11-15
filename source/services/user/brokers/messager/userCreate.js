@@ -14,7 +14,7 @@ export const userCreateMsg = async (payload, msg) => {
 
       const body = {
          ...payload,
-         password: bcryptjs.hashSync(payload.password),
+         // password: bcryptjs.hashSync(payload.password),
          role: ROLE_TYPE_USER,
       };
 

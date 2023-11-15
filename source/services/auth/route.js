@@ -1,10 +1,13 @@
 import { Router } from 'express';
 import { login, logout, tokenData, testCreateUserFromAuth } from '@services/auth/controllers/auth.controller.js';
-
 import { authCreateSchema } from '@services/auth/middlewares/auth.validator.js';
 import { validate } from '@config/validate.js';
 import { isAuthMiddleware } from '@root/config/middlewares/isAuthMiddleware.js';
 import { refreshToken } from './middlewares/refreshToken.js';
+
+import '@services/auth/passport/local.js';
+import '@services/auth/passport/google.js';
+import '@services/auth/passport/facebook.js';
 
 const router = Router();
 const ENDPOINT = '/api/auths';
@@ -22,7 +25,7 @@ router.get(`/`, (_, res) => {
 
 
 //login a user
-router.post(`${ENDPOINT}/login`, 
+router.post(`${ENDPOINT}/login`,
    validate(authCreateSchema), // middleware
    login // controller
 );

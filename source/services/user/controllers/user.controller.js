@@ -23,7 +23,7 @@ const createUser = async (req, res) => {
       const result = await sendQueue(queue, payload, replyId, queueReply);
 
       return res.send(responseCustom(result));
-      
+
    } catch (err) {
       console.log("🚀 ~ file: user.controller.js:81 ~ createUser ~ err:", err);
    }
@@ -74,7 +74,7 @@ const deleteUser = async (req, res) => {
          error: error.message,
       });
    }
-   
+
 };
 
 // ! ==========================================
@@ -105,8 +105,12 @@ const getUserById = async (req, res) => {
 
    try {
       const replyId = correlationId(); // is unique
-      const payload = req.params.id;
-      
+
+      // get user by id
+      const payload = {
+         _id: req.params.id,
+      };
+
       const queue = QUEUE_USER_GET;
       const queueReply = QUEUE_USER_GET + replyId;
       const result = await sendQueue(queue, payload, replyId, queueReply);

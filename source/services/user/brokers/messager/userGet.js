@@ -10,7 +10,7 @@ export const userGetMsg = async (payload, msg) => {
    try {
       const exclude = '-password'; // exclude property
 
-      data = await UserModel.findById(payload, exclude);
+      data = await UserModel.findOne(payload, exclude);
 
       if (!data) {
          code = 200005;
