@@ -27,69 +27,25 @@
 
 ## Build and run each service using docker-compose
 - <b>Local development</b>
+
+-- Monolith
 ```
-docker-compose -f docker-compose.prerequisite.yml up -d --force-recreate
-docker-compose -f docker-compose.local.yml up --force-recreate
+docker compose -f docker-compose.prerequisite.yml up -d --force-recreate
+docker compose -f docker-compose.development.yml up -d --force-recreate
 ```
-=> http://localhost:5000
+- http://localhost:5000
+
+-- Microservices
+```
+docker compose -f docker-compose.prerequisite.yml up -d --force-recreate
+./run-dev-micro.sh
+```
+- http://localhost:5000 (API Gateway)
+- http://localhost:500X (Sevices)
+
 <br>
 
-- <b>Production</b>
-1. Install traefik
-```
-https://github.com/rendyproklamanta/docker-traefik/tree/main/traefik
-```
-2. Build and deploy
-```
-docker build -t gateway_service:latest -f Dockerfile.gateway .
-docker-compose -f docker-compose.gateway.yml up -d
-```
-
-
-## Build and run "each" service on Docker 
-
-- Gateway Service <sup>*mandatory</sup>
-```
-docker build -t gateway_service:latest -f Dockerfile.gateway .
-docker run -p 5000:5000 gateway_service
-```
-=> http://localhost:5000
-
-<hr>
-
-- Auth Service
-@ login, logout, forgot
-```
-
-docker build -t auth_service:latest -f Dockerfile.auth .
-docker run -p 5001:5000 auth_service
-```
-=> http://localhost:5001
-
-<hr>
-
-- User Service
-@ manage user  CRUD
-```
-docker build --build-arg SERVICE_NAME=user -t user_service:latest -f Dockerfile.micro .
-docker run -p 5002:5000 user_service
-```
-=> http://localhost:5002
-
-## Build and run on VM or local PC without Docker
-```
-yarn install
-yarn dev
-```
-=> http://localhost:5000
-
-- Running via ngrok proxy : 
-```
-ngrok http 5000
-```
-=> http://xyz.ngrok.io:5000
-
-## Sample Transactions with microservices
+## Microservices Flow
 - <b>Editing Flow</b>
 => services => routes => middleware => controller => broker =>  model
 <br/>
@@ -113,6 +69,3 @@ ngrok http 5000
 => using cloud VPS minimal 2gb
 => using gitlab runner for pipeline
 => edit "gitlab-ci.yml" to deploy each service
-
-Step:
-- Route > middleware > controller

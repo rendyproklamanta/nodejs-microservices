@@ -1,4 +1,10 @@
-FROM node:20-alpine
+FROM public.ecr.aws/docker/library/node:20-alpine
+
+# Install apk alpine
+RUN apk --update --no-cache add curl tzdata
+
+# Set Timezone
+RUN ln -sf /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
 
 RUN mkdir -p /app && chown -R node:node /app
 ENV PATH /app/node_modules/.bin:$PATH
@@ -10,7 +16,6 @@ COPY ./source/index/index.js index.js
 
 # Install Yarn
 RUN npm install -g yarn --force
-run yarn set version stable
 RUN yarn
 
 EXPOSE 5000

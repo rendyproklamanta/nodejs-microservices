@@ -20,11 +20,11 @@ async function importRoutes() {
    for (const route of routes) {
       const routePath = path.resolve(route.service);
       const { default: middleware } = await import(routePath);
-   
+
       app.use(middleware);
    }
 }
- 
+
 importRoutes();
 
 export default app;
