@@ -27,15 +27,15 @@
 -- Monolith
 ```
 docker compose -f docker-compose.prerequisite.yml up -d --force-recreate
-docker compose -f docker-compose.development.yml up -d --force-recreate
+docker compose -f docker-compose.dev.mono.yml up -d --force-recreate
 ```
 - http://localhost:5000
 
 -- Microservices
 ```
 docker compose -f docker-compose.prerequisite.yml up -d --force-recreate
+./exec-build-micro.sh
 docker compose -f docker-compose.dev.micro.yml up -d --force-recreate
-./run-dev-micro.sh
 ```
 - http://localhost:5000 (API Gateway)
 - http://localhost:500X (Sevices)

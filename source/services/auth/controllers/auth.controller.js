@@ -4,7 +4,7 @@ import { correlationId, sendQueue } from '@config/broker.js';
 import { encrypt } from '@config/encryption.js';
 import { QUEUE_USER_CREATE, QUEUE_USER_LOGIN } from '@config/queue/userQueue.js';
 import { authConsumer } from '../brokers/consumer/auth.consumer.js';
-import { getToken } from '../utils/getToken.js';
+import { getToken } from '../../../config/utils/getToken.js';
 import { generateTokenJwt } from '../utils/generateTokenJwt.js';
 import { QUEUE_AUTH_READ_TOKEN_JWT } from '@root/config/queue/authQueue.js';
 import { responseCustom } from '@root/config/others.js';
@@ -62,7 +62,7 @@ const login = async (req, res) => {
 
       const payloadAccessToken = {
          token,
-         expiresIn : '1d'
+         expiresIn: '1d'
       };
 
       const accessToken = await generateTokenJwt(payloadAccessToken);
@@ -73,7 +73,7 @@ const login = async (req, res) => {
 
       const payloadRefreshToken = {
          token,
-         expiresIn : payload.rememberme ? remembermeDay : expireDay
+         expiresIn: payload.rememberme ? remembermeDay : expireDay
       };
 
       const refreshToken = await generateTokenJwt(payloadRefreshToken);
@@ -85,14 +85,14 @@ const login = async (req, res) => {
          sameSite: true,
          secure: false
       });
-     
+
       return res.send(responseCustom({
          message: 'Login success',
          code: code,
          success: true,
          data: {
-            accessToken : accessToken.data,
-            refreshToken : encryptRefreshToken,
+            accessToken: accessToken.data,
+            refreshToken: encryptRefreshToken,
             _id: result._id,
             role: result.role,
             name: result.name,

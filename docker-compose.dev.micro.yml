@@ -6,7 +6,7 @@ services:
       container_name: gateway_service
       image: gateway
       env_file:
-         - ./source/.env
+         - ./.env
       # build:
       #    dockerfile: Dockerfile.micro
       #    context: .
@@ -22,9 +22,19 @@ services:
       container_name: auth_service
       image: auth
       env_file:
-         - ./source/.env
+         - ./.env
       ports:
          - ${PORT_AUTH_SERVICE}:5000
+      networks:
+         - bridge
+
+   user_service:
+      container_name: user_service
+      image: user
+      env_file:
+         - ./.env
+      ports:
+         - ${PORT_USER_SERVICE}:5000
       networks:
          - bridge
     

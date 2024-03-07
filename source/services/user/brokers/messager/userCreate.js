@@ -1,5 +1,5 @@
-import bcryptjs from 'bcryptjs';
-import { ROLE_TYPE_USER } from '../../constants/permission.js';
+// import bcryptjs from 'bcryptjs';
+import { ROLE_TYPE_USER } from '@services/user/constants/permission.js';
 import UserModel from '../../models/user.model.js';
 import { sendReply } from '@root/config/broker.js';
 import errorCode from '../../errorCode.js';

@@ -2,26 +2,44 @@ version: "3.8"
 
 services:
 
-   auth_production:
-      image: repo.domain.com:5050/project/myapp:auth_production
+   myapp_production:
+      image: repo.domain.com:5050/project/myapp:production
       restart: always
       command: yarn start
-      ports:
-         - 5001:5000
       networks:
          - traefik-network
       deploy:
          mode: replicated
          replicas: 2
-         labels:
-         - "traefik.enable=true"
-         - "traefik.docker.lbswarm=true"
-         - "traefik.docker.network=traefik-network"
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.lbswarm=true"
+        - "traefik.docker.network=traefik-network"
 
-         # http
-         - "traefik.http.routers.auth-production-http.rule=Host(`192.168.1.1`)"
-         - "traefik.http.routers.auth-production-http.entrypoints=web"
-         - "traefik.http.services.auth-production.loadbalancer.server.port=5001"
+        # http
+        - "traefik.http.routers.app-production-http.rule=Host(`app.com`,`www.app.com`)"
+        - "traefik.http.routers.app-production-http.entrypoints=web"
+
+        # https
+        - "traefik.http.routers.app-production.rule=Host(`app.com`,`www.app.com`)"
+        - "traefik.http.routers.app-production.entrypoints=websecure"
+        - "traefik.http.routers.app-production.tls=true"
+        - "traefik.http.routers.app-production.tls.options=default"
+        - "traefik.http.routers.app-production.tls.certresolver=le"
+
+        # Service
+        - "traefik.http.services.app-production.loadbalancer.server.port=5000"
+        - "traefik.http.services.app-production.loadbalancer.sticky.cookie=true"
+        - "traefik.http.services.app-production.loadbalancer.sticky.cookie.httpOnly=true"
+        - "traefik.http.services.app-production.loadbalancer.sticky.cookie.name=app"
+        - "traefik.http.services.app-production.loadbalancer.sticky.cookie.secure=true"
+
+        # Middleware for http
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+        - "traefik.http.routers.app-production-http.middlewares=redirect-to-https"
+
+        # Middleware for https
+        - "traefik.http.routers.app-production.middlewares=default-middlewares@file"
 
 networks:
   traefik-network:

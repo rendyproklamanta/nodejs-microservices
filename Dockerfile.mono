@@ -23,6 +23,3 @@ EXPOSE 5000
 RUN NODE_OPTIONS='--experimental-vm-modules' jest healthcheck.test.js --force-exit
 
 CMD ["node", "--loader", "esm-module-alias/loader", "--no-warnings", "index.js"]
-
-# docker build -t app_api:latest -f Dockerfile .
-# docker run -p 5000:5000 app_api

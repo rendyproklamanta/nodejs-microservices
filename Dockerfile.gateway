@@ -29,6 +29,3 @@ EXPOSE 5000
 RUN NODE_OPTIONS='--experimental-vm-modules' jest healthcheck.gateway.test.js --force-exit
 
 CMD ["node", "--loader", "esm-module-alias/loader", "--no-warnings", "index.gateway.js"]
-
-# docker build -t gateway_service:latest -f Dockerfile.gateway .
-# docker run -p 5000:5000 gateway_service

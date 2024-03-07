@@ -1,11 +1,10 @@
 import { createChannel } from '@config/broker.js';
-import { QUEUE_USER_CREATE, QUEUE_USER_GET, QUEUE_USER_GET_ALL, QUEUE_USER_LOGIN, QUEUE_USER_UPDATE } from '@root/config/queue/userQueue.js';
+import { QUEUE_USER_CREATE, QUEUE_USER_GET, QUEUE_USER_GET_ALL, QUEUE_USER_ISADMIN, QUEUE_USER_LOGIN, QUEUE_USER_UPDATE } from '@root/config/queue/userQueue.js';
 import { userCreateMsg } from '../messager/userCreate.js';
 import { userUpdateMsg } from '../messager/userUpdate.js';
 import { userLoginMsg } from '../messager/userLogin.js';
 import { userGetMsg } from '../messager/userGet.js';
 import { userGetAllMsg } from '../messager/userGetAll.js';
-import { QUEUE_USER_ISADMIN } from '@root/config/queue/authQueue.js';
 import { isAdminMsg } from '../messager/isAdmin.js';
 
 let channel;

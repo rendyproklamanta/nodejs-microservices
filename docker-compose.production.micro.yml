@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+
+   gateway_production:
+      image: repo.domain.com:5050/project/myapp:gateway_production
+      restart: always
+      command: yarn start
+      ports:
+         - 5000:5000
+      networks:
+         - bridge
+
+   auth_production:
+      image: repo.domain.com:5050/project/myapp:auth_production
+      restart: always
+      command: yarn start
+      ports:
+         - 5001:5000
+      networks:
+         - bridge
+
+networks:
+  bridge:
+    driver: bridge
