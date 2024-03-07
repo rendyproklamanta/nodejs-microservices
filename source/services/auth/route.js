@@ -3,7 +3,7 @@ import { login, logout, tokenData, testCreateUserFromAuth } from '@services/auth
 import { authCreateSchema } from '@services/auth/middlewares/auth.validator.js';
 import { validate } from '@config/validate.js';
 import { isAuthMiddleware } from '@root/config/middlewares/isAuthMiddleware.js';
-import { refreshToken } from './middlewares/refreshToken.js';
+import { refreshToken } from '@services/auth/middlewares/refreshToken.js';
 
 import '@services/auth/passport/local.js';
 import '@services/auth/passport/google.js';

@@ -1,9 +1,8 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import { createChannel } from "@config/broker.js";
-import { QUEUE_AUTH_ISADMIN, QUEUE_AUTH_READ_TOKEN_JWT } from '@config/queue/authQueue.js';
+import { QUEUE_AUTH_READ_TOKEN_JWT } from '@config/queue/authQueue.js';
 import { readTokenMsg } from '../messager/readToken.js';
-import { isAdminMsg } from '../messager/isAdmin.js';
 import { generateTokenMsg } from '../messager/generateToken.js';
 
 const authConsumer = async () => {
@@ -22,17 +21,6 @@ const authConsumer = async () => {
          },
       );
 
-
-      // Check isadmin
-      await channel.assertQueue(QUEUE_AUTH_ISADMIN);
-      channel.consume(
-         QUEUE_AUTH_ISADMIN,
-         (msg) => {
-            const payload = JSON.parse(msg.content);
-            isAdminMsg(payload, msg);
-            channel.ack(msg);
-         },
-      );
 
       // Login
       await channel.assertQueue(QUEUE_AUTH_READ_TOKEN_JWT);

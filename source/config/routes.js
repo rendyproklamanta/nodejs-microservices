@@ -2,17 +2,17 @@
 const routes = [
    {
       service: 'services/auth/route.js',
-      endpoint: '/api/auth',
+      endpoint: '/api/auths',
       proxy: {
-         target: "http://localhost:5001",
+         target: "http://host.docker.internal:5001",
          changeOrigin: true,
       }
    },
    {
       service: 'services/user/route.js',
-      endpoint: '/api/user',
+      endpoint: '/api/users',
       proxy: {
-         target: "http://localhost:5002",
+         target: "http://host.docker.internal:5002",
          changeOrigin: true,
       }
    }

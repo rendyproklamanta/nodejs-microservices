@@ -16,11 +16,10 @@ WORKDIR /app
 COPY ./source .
 
 # Remove unnecessary directory
-RUN rm -rf ./source/services
-RUN rm -rf ./source/index
+RUN rm -rf /app/services
 
 # Copy the required directory
-COPY ./source/services/${SERVICE_NAME} .
+COPY ./source/services/${SERVICE_NAME} ./services/${SERVICE_NAME}
 COPY ./source/services/${SERVICE_NAME}/route.js ./route.js
 COPY ./source/index/index.micro.js ./index.micro.js
 

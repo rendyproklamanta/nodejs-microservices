@@ -5,7 +5,7 @@ services:
    local-development:
       container_name: local-development
       build:
-         dockerfile: Dockerfile
+         dockerfile: Dockerfile.mono
          context: .
       restart: always
       command: yarn dev

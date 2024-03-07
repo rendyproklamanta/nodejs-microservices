@@ -5,6 +5,8 @@ import { userUpdateMsg } from '../messager/userUpdate.js';
 import { userLoginMsg } from '../messager/userLogin.js';
 import { userGetMsg } from '../messager/userGet.js';
 import { userGetAllMsg } from '../messager/userGetAll.js';
+import { QUEUE_USER_ISADMIN } from '@root/config/queue/authQueue.js';
+import { isAdminMsg } from '../messager/isAdmin.js';
 
 let channel;
 
@@ -12,6 +14,17 @@ const userConsumer = async () => {
    channel = await createChannel();
 
    try {
+
+      // Check isadmin
+      await channel.assertQueue(QUEUE_USER_ISADMIN);
+      channel.consume(
+         QUEUE_USER_ISADMIN,
+         (msg) => {
+            const payload = JSON.parse(msg.content);
+            isAdminMsg(payload, msg);
+            channel.ack(msg);
+         },
+      );
 
       // User Create
       await channel.assertQueue(QUEUE_USER_CREATE);

@@ -1,5 +1,5 @@
 import { correlationId, sendQueue } from "../broker.js";
-import { QUEUE_AUTH_ISADMIN } from "../queue/authQueue.js";
+import { QUEUE_USER_ISADMIN } from "../queue/userQueue.js";
 
 export const isAdminMiddleware = async (req, res, next) => {
    const payload = {
@@ -7,8 +7,8 @@ export const isAdminMiddleware = async (req, res, next) => {
    };
 
    const replyId = correlationId(); // is unique
-   const queue = QUEUE_AUTH_ISADMIN;
-   const queueReply = QUEUE_AUTH_ISADMIN + replyId;
+   const queue = QUEUE_USER_ISADMIN;
+   const queueReply = QUEUE_USER_ISADMIN + replyId;
    const result = await sendQueue(queue, payload, replyId, queueReply);
 
    if (result.success) {

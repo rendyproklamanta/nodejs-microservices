@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+
+   auth_production:
+      image: repo.domain.com:5050/project/myapp:auth_production
+      restart: always
+      command: yarn start
+      ports:
+         - 5001:5000
+      networks:
+         - traefik-network
+      deploy:
+         mode: replicated
+         replicas: 2
+         labels:
+         - "traefik.enable=true"
+         - "traefik.docker.lbswarm=true"
+         - "traefik.docker.network=traefik-network"
+
+         # http
+         - "traefik.http.routers.auth-production-http.rule=Host(`192.168.1.1`)"
+         - "traefik.http.routers.auth-production-http.entrypoints=web"
+         - "traefik.http.services.auth-production.loadbalancer.server.port=5001"
+
+networks:
+  traefik-network:
+    external: true

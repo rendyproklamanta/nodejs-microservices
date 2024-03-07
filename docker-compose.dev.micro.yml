@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+
+   gateway_service:
+      container_name: gateway_service
+      image: gateway
+      env_file:
+         - ./source/.env
+      # build:
+      #    dockerfile: Dockerfile.micro
+      #    context: .
+      #    args:
+      #       - SERVICE_NAME=gateway
+      restart: always
+      ports:
+         - ${PORT_GATEWAY_SERVICE}:5000
+      networks:
+         - bridge
+
+   auth_service:
+      container_name: auth_service
+      image: auth
+      env_file:
+         - ./source/.env
+      ports:
+         - ${PORT_AUTH_SERVICE}:5000
+      networks:
+         - bridge
+    
+networks:
+  bridge:
+    driver: bridge

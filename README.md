@@ -34,6 +34,7 @@ docker compose -f docker-compose.development.yml up -d --force-recreate
 -- Microservices
 ```
 docker compose -f docker-compose.prerequisite.yml up -d --force-recreate
+docker compose -f docker-compose.dev.micro.yml up -d --force-recreate
 ./run-dev-micro.sh
 ```
 - http://localhost:5000 (API Gateway)

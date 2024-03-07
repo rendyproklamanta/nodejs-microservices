@@ -14,10 +14,10 @@ WORKDIR /app
 COPY ./source .
 
 # Remove unnecessary directory
-RUN rm -rf ./source/services
+RUN rm -rf /app/services
 
 # Copy the required directory
-COPY ./source/services/gateway .
+COPY ./source/services/gateway ./services/gateway
 COPY ./source/index/index.gateway.js ./index.gateway.js
 
 # Install Yarn
