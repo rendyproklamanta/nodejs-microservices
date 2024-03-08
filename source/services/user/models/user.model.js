@@ -41,30 +41,30 @@ const schema = new Schema(
    }
 );
 
-schema.pre('save', function (next) {
-   // eslint-disable-next-line no-invalid-this
-   const user = this;
+// schema.pre('save', function (next) {
+//    // eslint-disable-next-line no-invalid-this
+//    const user = this;
 
-   if (!user.isModified('password')) {
-      return next();
-   }
+//    if (!user.isModified('password')) {
+//       return next();
+//    }
 
-   // Hash the password
-   bcrypt.genSalt(10, (error, salt) => {
-      if (error) {
-         return next(error);
-      }
+//    // Hash the password
+//    bcrypt.genSalt(10, (error, salt) => {
+//       if (error) {
+//          return next(error);
+//       }
 
-      bcrypt.hashSync(user.password, salt, (error, hash) => {
-         if (error) {
-            return next(error);
-         }
+//       bcrypt.hashSync(user.password, salt, (error, hash) => {
+//          if (error) {
+//             return next(error);
+//          }
 
-         user.password = hash;
-         next();
-      });
-   });
-});
+//          user.password = hash;
+//          next();
+//       });
+//    });
+// });
 
 
 const UserModel = models.User || model('User', schema);

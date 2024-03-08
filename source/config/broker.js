@@ -14,7 +14,7 @@ async function createChannel() {
 
    try {
       connection = await connect(connectionString, {
-         timeout: 2000,
+         timeout: 10000,
       });
       channel = await connection.createChannel();
       channel.responseEmitter = new EventEmitter();
@@ -82,8 +82,8 @@ const sendReply = async (msg, payload) => {
    try {
       channel.sendToQueue(msg.properties.replyTo,
          Buffer.from(JSON.stringify(payload)), {
-            correlationId: msg.properties.correlationId,
-         });
+         correlationId: msg.properties.correlationId,
+      });
    } catch (err) {
       console.warn(err);
    }

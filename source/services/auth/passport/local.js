@@ -1,47 +1,79 @@
-import { Router } from 'express';
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import { correlationId, sendQueue } from '@root/config/broker.js';
-import { QUEUE_USER_GET } from '@root/config/queue/userQueue.js';
+import { QUEUE_USER_LOGIN } from '@root/config/queue/userQueue.js';
+import { generateTokenJwt } from '../utils/generateTokenJwt.js';
+import { encrypt } from '@root/config/encryption.js';
 
-const router = Router();
-const ENDPOINT = '/api/auths';
+passport.use(new LocalStrategy({
+   usernameField: 'username',
+   passwordField: 'password',
+   passReqToCallback: true
+}, async (req, username, password, done) => {
+   const code = 0;
+   const rememberMe = req.body.rememberMe;
 
-router.use(passport.initialize());
+   try {
 
-passport.use(
-   new LocalStrategy({ usernameField: 'email' }, async (email, password, done) => {
-      try {
-         const replyId = correlationId(); // is unique
+      // get user by email
+      const payload = {
+         username: username,
+         password: password,
+      };
 
-         // get user by email
-         const payload = {
-            email: email,
-         };
-         const queue = QUEUE_USER_GET;
-         const queueReply = QUEUE_USER_GET + replyId;
-         const result = await sendQueue(queue, payload, replyId, queueReply);
+      const replyId = correlationId();
+      const queue = QUEUE_USER_LOGIN;
+      const queueReply = QUEUE_USER_LOGIN + replyId;
+      const result = await sendQueue(queue, payload, replyId, queueReply);
 
-         // If user not found or password is incorrect, return error
-         if (!result || !bcrypt.compareSync(password, result.password)) {
-            return done(null, false, { message: 'Invalid email or password' });
-         }
-
-         // User and password are correct, return user
+      if (!result.success) {
          return done(null, result);
-      } catch (error) {
-         return done(error);
       }
-   })
-);
 
-router.post(`${ENDPOINT}/login/local`, passport.authenticate('local', { session: false }),
-   (req, res) => {
-      // Generate JWT token
-      const token = jwt.sign(req.user.toJSON(), 'your-secret-key');
+      // Generate Token
+      const token = {
+         ...result.data,
+      };
 
-      return res.json({ token });
+      delete token.password; // remove password for generate token
+
+      const payloadAccessToken = {
+         token,
+         expiresIn: '1d'
+      };
+
+      const accessToken = await generateTokenJwt(payloadAccessToken);
+      const remembermeDay = '30d';
+      const expireDay = '1d';
+
+      const payloadRefreshToken = {
+         token,
+         expiresIn: rememberMe === 1 ? remembermeDay : expireDay
+      };
+
+      const refreshToken = await generateTokenJwt(payloadRefreshToken);
+      const encryptRefreshToken = encrypt(refreshToken);
+
+      const resData = {
+         message: 'Login success',
+         code: code,
+         success: true,
+         data: {
+            accessToken: accessToken.data,
+            refreshToken: encryptRefreshToken,
+            _id: result.data._id,
+            role: result.data.role,
+            name: result.data.name,
+            username: result.data.username,
+         },
+      };
+
+      return done(null, resData);
+
+   } catch (error) {
+      return done(error);
    }
+})
 );
+
+export default passport;

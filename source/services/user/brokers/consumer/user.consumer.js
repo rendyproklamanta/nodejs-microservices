@@ -1,11 +1,12 @@
 import { createChannel } from '@config/broker.js';
-import { QUEUE_USER_CREATE, QUEUE_USER_GET, QUEUE_USER_GET_ALL, QUEUE_USER_ISADMIN, QUEUE_USER_LOGIN, QUEUE_USER_UPDATE } from '@root/config/queue/userQueue.js';
+import { QUEUE_USER_CREATE, QUEUE_USER_GENERATE_DUMMY, QUEUE_USER_GET, QUEUE_USER_GET_ALL, QUEUE_USER_ISADMIN, QUEUE_USER_LOGIN, QUEUE_USER_UPDATE } from '@root/config/queue/userQueue.js';
 import { userCreateMsg } from '../messager/userCreate.js';
 import { userUpdateMsg } from '../messager/userUpdate.js';
 import { userLoginMsg } from '../messager/userLogin.js';
 import { userGetMsg } from '../messager/userGet.js';
 import { userGetAllMsg } from '../messager/userGetAll.js';
 import { isAdminMsg } from '../messager/isAdmin.js';
+import generateDummyDataMsg from '../messager/generateDummyData.js';
 
 let channel;
 
@@ -81,6 +82,18 @@ const userConsumer = async () => {
             const payload = JSON.parse(msg.content);
             console.log("[=>>] Receive QUEUE_USER_GET_ALL :", payload);
             userGetAllMsg(payload, msg);
+            channel.ack(msg);
+         },
+      );
+
+      // User Get All
+      await channel.assertQueue(QUEUE_USER_GENERATE_DUMMY);
+      channel.consume(
+         QUEUE_USER_GENERATE_DUMMY,
+         (msg) => {
+            const payload = JSON.parse(msg.content);
+            console.log("[=>>] Receive QUEUE_USER_GENERATE_DUMMY :", payload);
+            generateDummyDataMsg(payload, msg);
             channel.ack(msg);
          },
       );

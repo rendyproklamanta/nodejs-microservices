@@ -1,4 +1,4 @@
-export const getToken = async (req) => {
+const getToken = async (req) => {
    try {
       if (
          req.headers.authorization &&
@@ -14,3 +14,5 @@ export const getToken = async (req) => {
       return false;
    }
 };
+
+export default getToken;

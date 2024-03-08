@@ -4,6 +4,11 @@ services:
 
    local-development:
       container_name: local-development
+      environment:
+         - NODE_ENV=development
+         - TZ=Asia/Jakarta
+         - CHOKIDAR_USEPOLLING=true
+         - WATCHPACK_POLLING=true
       build:
          dockerfile: Dockerfile.mono
          context: .

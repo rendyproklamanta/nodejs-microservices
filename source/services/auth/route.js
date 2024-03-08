@@ -4,13 +4,14 @@ import { authCreateSchema } from '@services/auth/middlewares/auth.validator.js';
 import { validate } from '@config/validate.js';
 import { isAuthMiddleware } from '@root/config/middlewares/isAuthMiddleware.js';
 import { refreshToken } from '@services/auth/middlewares/refreshToken.js';
-
-import '@services/auth/passport/local.js';
-import '@services/auth/passport/google.js';
-import '@services/auth/passport/facebook.js';
+import passportLocal from '@services/auth/passport/local.js';
+import passportFacebook from '@services/auth/passport/facebook.js';
 
 const router = Router();
 const ENDPOINT = '/api/auths';
+
+router.use(passportLocal.initialize());
+router.use(passportFacebook.initialize());
 
 //root route
 const defaultRes = (res) => {
@@ -29,6 +30,33 @@ router.post(`${ENDPOINT}/login`,
    validate(authCreateSchema), // middleware
    login // controller
 );
+
+//login passport local
+router.post(`${ENDPOINT}/auth/local`,
+   validate(authCreateSchema),
+   passportLocal.authenticate('local', { session: false }),
+   (req, res) => {
+      const rememberMe = req.body.rememberMe;
+      const remembermeTime = 2592000000; // in ms = 30d
+      const expireTime = 86400000; // in ms = 1d
+      res.cookie("refreshToken", req.user.data.refreshToken, {
+         maxAge: rememberMe ? remembermeTime : expireTime,
+         httpOnly: true,
+         sameSite: true,
+         secure: false
+      });
+      return res.send(req.user);
+   }
+);
+
+// Facebook authentication route
+router.get('/auth/facebook', passportFacebook.authenticate('facebook'));
+
+// Facebook authentication callback route
+router.get('/auth/facebook/callback', passportFacebook.authenticate('facebook', {
+   successRedirect: '/',
+   failureRedirect: '/login' // Redirect to login page on authentication failure
+}));
 
 //logout a user
 router.get(`${ENDPOINT}/logout`,

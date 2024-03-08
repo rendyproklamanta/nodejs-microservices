@@ -27,7 +27,7 @@ const teamCreateGenerate = async (req, res) => {
             permission: permission,
          });
          await data.save();
-         res.send({
+         return res.send({
             success: true,
             data
          });
@@ -61,17 +61,17 @@ const teamCreate = async (req, res) => {
 
       let permission;
       switch (role) {
-      case ROLE_TYPE_ADMIN:
-         permission = roleAdmin;
-         break;
-      case ROLE_TYPE_USER:
-         permission = roleUser;
-         break;
-      case ROLE_TYPE_ACCOUNTING:
-         permission = roleAccounting;
-         break;
-      default:
-         break;
+         case ROLE_TYPE_ADMIN:
+            permission = roleAdmin;
+            break;
+         case ROLE_TYPE_USER:
+            permission = roleUser;
+            break;
+         case ROLE_TYPE_ACCOUNTING:
+            permission = roleAccounting;
+            break;
+         default:
+            break;
       }
 
       const perms = {

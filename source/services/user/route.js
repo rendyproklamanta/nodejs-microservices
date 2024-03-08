@@ -1,12 +1,14 @@
 import { Router } from 'express';
-import { createUser, updateUser, deleteUser, getUserById, getAllUsers, forgetPassword, resetPassword, changePassword, verifyEmailAddress } from '@services/user/controllers/user.controller.js';
+import { createUser, updateUser, deleteUser, getUserById, getAllUsers, forgetPassword, resetPassword, changePassword, verifyEmailAddress, generateDummy } from '@services/user/controllers/user.controller.js';
 import { teamCreateGenerate, teamCreate } from '@services/user/controllers/team.controller.js';
 import { validate } from '@config/validate.js';
 import { userCreateSchema, userUpdateSchema, userParamsIdSchema } from '@services/user/middlewares/user.validator.js';
 import { PERMISSION_USER_DELETE, PERMISSION_USER_GET, PERMISSION_USER_GET_ALL, PERMISSION_USER_UPDATE } from '@services/user/constants/permission.js';
 import isAuthWithPermissionMiddleware from '@root/config/middlewares/isAuthWithPermissionMiddleware.js';
 import { isApiKey } from '@config/middlewares/isApiKey.js';
-import { emailVerificationLimit, passwordVerificationLimit } from '@root/config/others.js';
+import emailVerificationLimit from '@root/services/auth/utils/emailVerificationLimit.js';
+import passwordVerificationLimit from '@root/services/auth/utils/passwordVerificationLimit.js';
+import { isAuthMiddleware } from '@root/config/middlewares/isAuthMiddleware.js';
 
 const router = Router();
 const ENDPOINT = '/api/users';
@@ -69,25 +71,31 @@ router.get(`${ENDPOINT}/generate/:role`,
 );
 
 //verify email
-router.post(`${ENDPOINT}/vemail/erify`, 
+router.post(`${ENDPOINT}/email/verify`,
    emailVerificationLimit, // middleware
    verifyEmailAddress // controller
 );
 
 //forget-password
-router.put(`${ENDPOINT}/password/forget`, 
+router.put(`${ENDPOINT}/password/forget`,
    passwordVerificationLimit, // middleware
    forgetPassword // controller
 );
 
 //reset-password
-router.put(`${ENDPOINT}/password/reset`, 
+router.put(`${ENDPOINT}/password/reset`,
    resetPassword // controller
 );
 
 //change password
-router.post(`${ENDPOINT}/password/change`, 
+router.post(`${ENDPOINT}/password/change`,
    changePassword // controller
+);
+
+//get all
+router.post(`${ENDPOINT}/generate/dummy/:type`,
+   isAuthMiddleware, // middleware
+   generateDummy // controller
 );
 
 export default router;

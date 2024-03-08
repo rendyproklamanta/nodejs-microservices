@@ -1,6 +1,6 @@
 import { correlationId, sendQueue } from "../broker.js";
 import { QUEUE_AUTH_READ_TOKEN_JWT } from "../queue/authQueue.js";
-import { getToken } from '@root/config/utils/getToken.js';
+import getToken from '@root/config/utils/getToken.js';
 
 export const isAuthMiddleware = async (req, res, next) => {
    try {
