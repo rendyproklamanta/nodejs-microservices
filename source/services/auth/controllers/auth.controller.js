@@ -35,85 +35,6 @@ const testCreateUserFromAuth = async (req, res) => {
 // ! ==========================================
 // ! Controller
 // ! ==========================================
-const login = async (req, res) => {
-   const code = 0;
-
-   try {
-
-      const payload = {
-         ...req.body,
-      };
-
-      const replyId = correlationId();
-      const queue = QUEUE_USER_LOGIN;
-      const queueReply = QUEUE_USER_LOGIN + replyId;
-      const result = await sendQueue(queue, payload, replyId, queueReply);
-
-      if (!result.success) {
-         return res.status(500).send(result);
-      }
-
-      // Generate TOken
-      const token = {
-         ...result.data,
-      };
-
-      delete token.password; // remove password for generate token
-
-      const payloadAccessToken = {
-         token,
-         expiresIn: '1d'
-      };
-
-      const accessToken = await generateTokenJwt(payloadAccessToken);
-      const remembermeDay = '30d';
-      const remembermeTime = 2592000000; // in ms = 30d
-      const expireDay = '1d';
-      const expireTime = 86400000; // in ms = 1d
-
-      const payloadRefreshToken = {
-         token,
-         expiresIn: payload.rememberme ? remembermeDay : expireDay
-      };
-
-      const refreshToken = await generateTokenJwt(payloadRefreshToken);
-      const encryptRefreshToken = encrypt(refreshToken);
-
-      res.cookie("refreshToken", encryptRefreshToken, {
-         maxAge: payload.rememberme ? remembermeTime : expireTime,
-         httpOnly: true,
-         sameSite: true,
-         secure: false
-      });
-
-      return res.send(responseCustom({
-         message: 'Login success',
-         code: code,
-         success: true,
-         data: {
-            accessToken: accessToken.data,
-            refreshToken: encryptRefreshToken,
-            _id: result._id,
-            role: result.role,
-            name: result.name,
-            username: result.username,
-         },
-      }));
-
-   } catch (error) {
-      return res.status(500).send(
-         responseCustom({
-            code: code,
-            success: false,
-            error
-         })
-      );
-   }
-};
-
-// ! ==========================================
-// ! Controller
-// ! ==========================================
 const logout = (req, res) => {
    const refreshToken = req.cookies.refreshToken;
    if (refreshToken) {
@@ -153,7 +74,6 @@ const tokenData = async (req, res, next) => {
 
 export {
    testCreateUserFromAuth,
-   login,
    logout,
    tokenData,
 };

@@ -3,7 +3,7 @@ import { createUser, updateUser, deleteUser, getUserById, getAllUsers, forgetPas
 import { teamCreateGenerate, teamCreate } from '@services/user/controllers/team.controller.js';
 import { validate } from '@config/validate.js';
 import { userCreateSchema, userUpdateSchema, userParamsIdSchema } from '@services/user/middlewares/user.validator.js';
-import { PERMISSION_USER_DELETE, PERMISSION_USER_GET, PERMISSION_USER_GET_ALL, PERMISSION_USER_UPDATE } from '@services/user/constants/permission.js';
+import { PERMISSION_USER_DELETE, PERMISSION_USER_GET, PERMISSION_USER_GET_ALL, PERMISSION_USER_UPDATE } from '@services/user/constants/roles.js';
 import isAuthWithPermissionMiddleware from '@root/config/middlewares/isAuthWithPermissionMiddleware.js';
 import { isApiKey } from '@config/middlewares/isApiKey.js';
 import emailVerificationLimit from '@root/services/auth/utils/emailVerificationLimit.js';

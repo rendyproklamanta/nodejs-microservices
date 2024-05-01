@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { login, logout, tokenData, testCreateUserFromAuth } from '@services/auth/controllers/auth.controller.js';
+import { logout, tokenData, testCreateUserFromAuth } from '@services/auth/controllers/auth.controller.js';
 import { authCreateSchema } from '@services/auth/middlewares/auth.validator.js';
 import { validate } from '@config/validate.js';
 import { isAuthMiddleware } from '@root/config/middlewares/isAuthMiddleware.js';
@@ -25,22 +25,16 @@ router.get(`/`, (_, res) => {
 });
 
 
-//login a user
-router.post(`${ENDPOINT}/login`,
-   validate(authCreateSchema), // middleware
-   login // controller
-);
-
 //login passport local
-router.post(`${ENDPOINT}/auth/local`,
+router.post(`${ENDPOINT}/method/local`,
    validate(authCreateSchema),
    passportLocal.authenticate('local', { session: false }),
    (req, res) => {
       const rememberMe = req.body.rememberMe;
       const remembermeTime = 2592000000; // in ms = 30d
-      const expireTime = 86400000; // in ms = 1d
+      const maxAge = 86400000; // in ms = 1d
       res.cookie("refreshToken", req.user.data.refreshToken, {
-         maxAge: rememberMe ? remembermeTime : expireTime,
+         maxAge: rememberMe ? remembermeTime : maxAge,
          httpOnly: true,
          sameSite: true,
          secure: false

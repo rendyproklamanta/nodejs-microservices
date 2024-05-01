@@ -45,6 +45,7 @@ passport.use(new LocalStrategy({
       const accessToken = await generateTokenJwt(payloadAccessToken);
       const remembermeDay = '30d';
       const expireDay = '1d';
+      const maxAge = 60; // seconds
 
       const payloadRefreshToken = {
          token,
@@ -65,6 +66,7 @@ passport.use(new LocalStrategy({
             role: result.data.role,
             name: result.data.name,
             username: result.data.username,
+            maxAge: maxAge,
          },
       };
 

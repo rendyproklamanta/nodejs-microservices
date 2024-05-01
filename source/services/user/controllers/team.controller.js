@@ -1,6 +1,6 @@
 import bcryptjs from 'bcryptjs';
 import UserModel from '../models/user.model.js';
-import { ROLE_TYPE_ACCOUNTING, ROLE_TYPE_ADMIN, ROLE_TYPE_USER, roleAccounting, roleAdmin, roleUser } from '../constants/permission.js';
+import { ROLE_TYPE_ACCOUNTING, ROLE_TYPE_ADMIN, ROLE_TYPE_USER, roleAccounting, roleAdmin, roleUser } from '../constants/roles.js';
 
 const teamCreateGenerate = async (req, res) => {
    try {

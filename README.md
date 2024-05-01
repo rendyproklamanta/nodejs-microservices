@@ -1,8 +1,9 @@
-### Nodejs Based Microservices
+# Nodejs Based Microservices
+
 - Using docker : Seperate directory services for runing each docker service
 - Using Traefik for domain proxy, ex : auth.domain.com, user.domain.com
 
-### Tech and Packages we use in this project:
+## Tech and Packages we use in this project
 
 - Framework Express.js.
 - http-proxy-middleware : API gateway
@@ -21,28 +22,31 @@
 - pm2 : for deployed to VM
 - passport : login management
 
-
-### <b>Local development</b>
+## Local development
 
 -- Monolith
-```
+
+```shell
 docker compose -f docker-compose.prerequisite.yml up -d --force-recreate
 docker compose -f docker-compose.dev.mono.yml up -d --force-recreate
 ```
-- http://localhost:5000
+
+- http://localhost:5000 <!-- markdownlint-disable MD034 -->
 
 -- Microservices
-```
+
+```shell
 docker compose -f docker-compose.prerequisite.yml up -d --force-recreate
 ./exec-build-micro.sh
 docker compose -f docker-compose.dev.micro.yml up -d --force-recreate
 ```
+
 - http://localhost:5000 (API Gateway)
 - http://localhost:500X (Sevices)
 
-
 ## Microservices Flow
-- @ <b>Editing Flow</b>
+
+- @ <b>Editing Flow</b> <!-- markdownlint-disable MD033 -->
 => services => routes => middleware => controller => broker =>  model
 <br/>
 

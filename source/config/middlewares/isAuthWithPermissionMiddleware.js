@@ -2,7 +2,7 @@ import { correlationId, sendQueue } from '@config/broker.js';
 import getToken from '@root/config/utils/getToken.js';
 import { QUEUE_AUTH_READ_TOKEN_JWT } from '../queue/authQueue.js';
 import { QUEUE_USER_GET } from '../queue/userQueue.js';
-import { ROLE_TYPE_ACCOUNTING, ROLE_TYPE_ADMIN, ROLE_TYPE_USER, roleAccounting, roleAdmin, roleUser } from '@root/services/user/constants/permission.js';
+import { ROLE_TYPE_ACCOUNTING, ROLE_TYPE_ADMIN, ROLE_TYPE_USER, roleAccounting, roleAdmin, roleUser } from '@root/services/user/constants/roles.js';
 
 const isAuthWithPermissionMiddleware = (access) => async (req, res, next) => {
    try {
@@ -75,7 +75,7 @@ const isAuthWithPermissionMiddleware = (access) => async (req, res, next) => {
          });
       }
    } catch (error) {
-      console.log("🚀 ~ file: isAuthWithPermissionMiddleware.js:78 ~ isAuthWithPermissionMiddleware ~ error:", error);
+      console.log("🚀 ~ file: isAuthWithPermissionMiddleware.js:78 ~ error:", error);
    }
 
 
