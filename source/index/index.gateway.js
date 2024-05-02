@@ -11,10 +11,6 @@ app.get('/', (req, res) => {
    res.send('Gateway service is running');
 });
 
-app.get('/healthcheck', (req, res) => {
-   res.send({});
-});
-
 routes.forEach(route => {
    app.use(createProxyMiddleware(route.endpoint, route.proxy));
 });

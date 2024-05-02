@@ -6,6 +6,9 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import connectDB from "@config/db.js";
+import { IpFilter } from 'express-ipfilter';
+import { rateLimit } from 'express-rate-limit';
+import escapeHtml from 'escape-html';
 
 const expressMiddleware = (app, express) => {
    connectDB();
@@ -26,10 +29,64 @@ const expressMiddleware = (app, express) => {
    app.use(morgan('combined'));
    app.use(bodyParser.json());
 
+   // Custom middleware to escape HTML in request body parameters
+   const escapeHtmlMiddleware = (req, res, next) => {
+      if (req.body) {
+         // Escape HTML in request body parameters
+         for (const key in req.body) {
+            if (typeof req.body[key] === 'string') {
+               req.body[key] = escapeHtml(req.body[key]);
+            }
+         }
+      }
+      next();
+   };
+   app.use(escapeHtmlMiddleware);
+
+   // Apply the rate limiting middleware to all requests.
+   const limiter = rateLimit({
+      windowMs: 1 * 60 * 1000, // per X minutes
+      limit: 100, // Limit each IP to 100 requests per `window`.
+      standardHeaders: 'draft-7', // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
+      legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
+      message: async (req, res) => {
+         return res.status(429).send({
+            success: false,
+            message: 'Too Many Request',
+         });
+      },
+   });
+   app.use(limiter);
+
+   // Middleware function to log endpoint, IP address, and timestamp
+   app.use((req, res, next) => {
+      const timestamp = new Date().toISOString();
+
+      console.log(`=======================================================`);
+      console.log(`Method: ${req.method} ${req.url}`);
+      console.log('Query Parameters:', req.query);
+      console.log('Request Body:', req.body);
+      console.log('Headers:', req.headers);
+      console.log('IP Address:', req.ip);
+      console.log('Timestamp:', timestamp);
+      console.log(`=======================================================`);
+      next();
+   });
+
+   // Allow the following IPs
+   if (process.env.NODE_ENV === 'production') {
+      const ips = ['127.0.0.1'];
+      app.use(IpFilter(ips, { mode: 'allow' }));
+   }
+
    // Use express's default error handling middleware
    app.use((err, req, res, next) => {
       if (res.headersSent) return next(err);
       res.status(400).send({ message: err.message });
+   });
+
+   app.get('/healthz/status', (req, res) => {
+      return res.send({ status: 'up' });
    });
 
    const PORT = process.env.PORT_GATEWAY_SERVICE || 5000;

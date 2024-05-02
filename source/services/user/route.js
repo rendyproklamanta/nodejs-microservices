@@ -52,7 +52,7 @@ router.get(`${ENDPOINT}/:id`,
 );
 
 //get all
-router.get(`${ENDPOINT}`,
+router.get(`${ENDPOINT}/all`,
    isAuthWithPermissionMiddleware(PERMISSION_USER_GET_ALL), // middleware
    validate(userParamsIdSchema),  // validator
    getAllUsers // controller

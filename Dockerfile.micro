@@ -31,4 +31,7 @@ EXPOSE 5000
 
 RUN NODE_OPTIONS='--experimental-vm-modules' jest healthcheck.micro.test.js --force-exit
 
+HEALTHCHECK --interval=5m --timeout=3s --retries=3 --start-interval=10s \
+  CMD curl -f http://localhost:5000/healthz/status || exit 1
+
 CMD ["node", "--loader", "esm-module-alias/loader", "--no-warnings", "index.micro.js"]

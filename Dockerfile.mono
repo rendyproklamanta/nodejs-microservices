@@ -27,8 +27,8 @@ RUN NODE_OPTIONS='--experimental-vm-modules' jest healthcheck.test.js --force-ex
 FROM base AS release
 COPY --from=dependencies /app/node_modules_deps /app/node_modules
 
-HEALTHCHECK --interval=30s --timeout=3s --retries=3 --start-interval=10s \
-  CMD curl -f http://localhost:5000 || exit 1
+HEALTHCHECK --interval=5m --timeout=3s --retries=3 --start-interval=10s \
+  CMD curl -f http://localhost:5000/healthz/status || exit 1
 
 EXPOSE 5000
 

@@ -38,38 +38,34 @@ const correlationId = () => {
    return new Date().getTime().toString() + Math.random().toString();
 };
 
-const sendQueueOnly = async (queue, payload) => {
+
+const sendQueue = async (queue, payload, replyId = null, queueReply = null) => {
    try {
-      await channel.assertQueue(queue);
-      channel.sendToQueue(queue, Buffer.from(JSON.stringify(payload)));
-      console.log(`[=>>] Sent ${queue} :`, payload);
-   } catch (err) {
-      console.warn(err);
-   }
-};
+      if (replyId && queueReply) {
+         await channel.assertQueue(queue);
+         channel.sendToQueue(queue,
+            Buffer.from(JSON.stringify(payload)),
+            { correlationId: replyId, replyTo: queueReply }
+         );
 
-const sendQueue = async (queue, payload, replyId, queueReply) => {
-   try {
-      await channel.assertQueue(queue);
-      channel.sendToQueue(queue,
-         Buffer.from(JSON.stringify(payload)),
-         { correlationId: replyId, replyTo: queueReply }
-      );
+         await channel.assertQueue(queueReply, optionsRabbitMq);
+         channel.consume(queueReply, msg => channel.responseEmitter.emit(msg.properties.correlationId, msg.content), { noAck: true });
 
-      await channel.assertQueue(queueReply, optionsRabbitMq);
-      channel.consume(queueReply, msg => channel.responseEmitter.emit(msg.properties.correlationId, msg.content), { noAck: true });
+         const replyMsg = new Promise((resolve) => {
+            channel.responseEmitter.once(replyId, async msg => {
+               const data = JSON.parse(msg);
+               resolve(data);
+            });
 
-      const replyMsg = new Promise((resolve) => {
-         channel.responseEmitter.once(replyId, async msg => {
-            const data = JSON.parse(msg);
-            resolve(data);
          });
 
-      });
-
-      const res = await replyMsg;
-      return res;
-
+         const res = await replyMsg;
+         return res;
+      } else {
+         await channel.assertQueue(queue);
+         channel.sendToQueue(queue, Buffer.from(JSON.stringify(payload)));
+         console.log(`[=>>] Sent ${queue} :`, payload);
+      }
    } catch (err) {
       console.warn(err);
    }
@@ -92,7 +88,6 @@ const sendReply = async (msg, payload) => {
 export {
    createChannel,
    sendQueue,
-   sendQueueOnly,
    sendReply,
    correlationId,
 };

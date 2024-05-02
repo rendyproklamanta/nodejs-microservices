@@ -8,10 +8,6 @@ const app = express();
 // Express Middleware
 expressMiddleware(app, express);
 
-app.get('/healthcheck', (req, res) => {
-   res.send({});
-});
-
 app.use("/", route);
 
 export default app;

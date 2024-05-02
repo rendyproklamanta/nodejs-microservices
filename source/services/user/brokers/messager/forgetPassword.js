@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
-import { sendEmail } from "@root/services/notification/sendEmail.js";
+import { sendEmail } from "@root/services/notification/brokers/messager/sendEmail.js";
 import UserModel from "../../models/user.model.js";
 import { generateTokenJwt } from "@root/services/auth/utils/generateTokenJwt.js";
 

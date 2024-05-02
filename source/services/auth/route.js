@@ -30,15 +30,16 @@ router.post(`${ENDPOINT}/method/local`,
    validate(authCreateSchema),
    passportLocal.authenticate('local', { session: false }),
    (req, res) => {
-      const rememberMe = req.body.rememberMe;
-      const remembermeTime = 2592000000; // in ms = 30d
-      const maxAge = 86400000; // in ms = 1d
-      res.cookie("refreshToken", req.user.data.refreshToken, {
-         maxAge: rememberMe ? remembermeTime : maxAge,
-         httpOnly: true,
-         sameSite: true,
-         secure: false
-      });
+      if (req.user.success) {
+         const maxAge = req.user.data.maxAge;
+         res.cookie("refreshToken", req.user.data.refreshToken, {
+            maxAge: maxAge * 1000,
+            httpOnly: true,
+            sameSite: true,
+            secure: false
+         });
+      }
+
       return res.send(req.user);
    }
 );

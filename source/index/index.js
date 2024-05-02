@@ -12,10 +12,6 @@ app.get('/', (req, res) => {
    res.send('API service is running');
 });
 
-app.get('/healthcheck', (req, res) => {
-   res.send({});
-});
-
 async function importRoutes() {
    for (const route of routes) {
       const routePath = path.resolve(route.service);
