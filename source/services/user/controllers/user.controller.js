@@ -240,7 +240,8 @@ const generateDummyData = async (amount) => {
       const queue = QUEUE_USER_GENERATE_DUMMY;
       const queueReply = QUEUE_USER_GENERATE_DUMMY + replyId;
       const result = await sendQueue(queue, payload, replyId, queueReply);
-      return result;
+
+      return result.data;
 
    } catch (err) {
       return err;
@@ -269,9 +270,28 @@ const generateDummy = async (req, res) => {
          }
       }
 
-      // Get data from body
-      if (req.params.type === 'filter') {
+      if (req.query.page && req.query.pageSize) {
+         // Get data from query
+         let page = parseInt(req.query.page);
+         const pageSize = parseInt(req.query.pageSize);
 
+         // pagination
+         if (page === 0) {
+            page = 1;
+         } else {
+            page = +page + 1;
+         }
+
+         const startIndex = (page - 1) * pageSize;
+         const endIndex = page * pageSize;
+
+         data = getData.slice(startIndex, endIndex);
+         totalPages = Math.ceil(getData.length / pageSize);
+         totalRow = getData.length;
+      }
+
+      if (req.params.type === 'filter') {
+         // Get data from body
          req.body.filter.forEach((filter) => {
             filters[filter.id] = filter.value;
          });
@@ -306,32 +326,11 @@ const generateDummy = async (req, res) => {
          totalRow = dataFilter.length;
       }
 
-      // Get data from query
-      if (req.params.type !== 'filter' && Object.keys(req.query).length > 0) {
-         let page = parseInt(req.query.page);
-         const pageSize = parseInt(req.query.pageSize);
-
-         // pagination
-         if (page === 0) {
-            page = 1;
-         } else {
-            page = +page + 1;
-         }
-
-         // Calculate the start and end indexes for the requested page
-         const startIndex = (page - 1) * pageSize;
-         const endIndex = page * pageSize;
-
-         data = getData.slice(startIndex, endIndex);
-         totalPages = Math.ceil(getData.length / pageSize);
-         totalRow = getData.length;
-      }
-
       return res.status(200).send({
          success: true,
-         data,
          totalPages,
          totalRow,
+         data,
       });
    } catch (err) {
       return res.status(500).send({
@@ -340,6 +339,7 @@ const generateDummy = async (req, res) => {
       });
    }
 };
+
 
 export {
    createUser,

@@ -31,9 +31,14 @@ router.post(`${ENDPOINT}/method/local`,
    passportLocal.authenticate('local', { session: false }),
    (req, res) => {
       if (req.user.success) {
-         const maxAge = req.user.data.maxAge;
          res.cookie("refreshToken", req.user.data.refreshToken, {
-            maxAge: maxAge * 1000,
+            maxAge: req.user.data.maxAge * 1000,
+            httpOnly: true,
+            sameSite: true,
+            secure: false
+         });
+         res.cookie("accessToken", req.user.data.accessToken, {
+            maxAge: req.user.data.accessTokenExpire * 1000,
             httpOnly: true,
             sameSite: true,
             secure: false

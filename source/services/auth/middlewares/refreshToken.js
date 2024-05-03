@@ -23,12 +23,14 @@ export const refreshToken = async (req, res, next) => {
 
       const decoded = jwt.verify(decrypt(refreshToken), process.env.JWT_SECRET);
       const accessToken = await generateTokenJwt(decoded);
+      const tokenExpireTime = 86400;
 
       // res.header('Authorization', accessToken).send(decoded.user);
       return res.status(200).send({
          success: true,
          data: {
-            accessToken: accessToken.data
+            accessToken: accessToken.data,
+            accessTokenExpire: tokenExpireTime,
          }
       });
    } catch (error) {

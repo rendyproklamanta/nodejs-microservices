@@ -93,6 +93,11 @@ router.post(`${ENDPOINT}/password/change`,
 );
 
 //get all
+router.get(`${ENDPOINT}/generate/dummy/table`,
+   isAuthMiddleware, // middleware
+   generateDummy // controller
+);
+
 router.post(`${ENDPOINT}/generate/dummy/:type`,
    isAuthMiddleware, // middleware
    generateDummy // controller

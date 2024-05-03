@@ -36,10 +36,11 @@ passport.use(new LocalStrategy({
       };
       delete token.password; // remove password for generate token
 
-      const remembermeDay = '30d';
-      const expireDay = '1d';
+      const tokenRemembermeDay = '30d';
+      const tokenExpireDay = '1d';
+      const tokenExpireTime = 86400;
       const maxAge = 600; // seconds
-      const rememberMeTime = 31536000000; // ms
+      const remembermeTime = 31536000000; // ms
 
       const payloadAccessToken = {
          token,
@@ -50,7 +51,7 @@ passport.use(new LocalStrategy({
 
       const payloadRefreshToken = {
          token,
-         expiresIn: rememberMe ? remembermeDay : expireDay
+         expiresIn: rememberMe ? tokenRemembermeDay : tokenExpireDay
       };
 
       const refreshToken = await generateTokenJwt(payloadRefreshToken);
@@ -67,7 +68,8 @@ passport.use(new LocalStrategy({
             role: result.data.role,
             name: result.data.name,
             username: result.data.username,
-            maxAge: rememberMe ? rememberMeTime : maxAge,
+            accessTokenExpire: tokenExpireTime,
+            maxAge: rememberMe ? remembermeTime : maxAge,
          },
       };
 
