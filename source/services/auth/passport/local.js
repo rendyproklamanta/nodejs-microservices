@@ -38,9 +38,9 @@ passport.use(new LocalStrategy({
 
       const tokenRemembermeDay = '30d';
       const tokenExpireDay = '1d';
-      const tokenExpireTime = 86400;
+      const tokenExpireTime = 86400; //seconds
       const maxAge = 600; // seconds
-      const remembermeTime = 31536000000; // ms
+      const remembermeTime = 31536000; // seconds
 
       const payloadAccessToken = {
          token,
@@ -76,7 +76,11 @@ passport.use(new LocalStrategy({
       return done(null, resData);
 
    } catch (error) {
-      return done(error);
+      const errors = {
+         success: false,
+         message: error.message,
+      };
+      return done(null, errors);
    }
 })
 );

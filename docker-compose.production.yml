@@ -5,8 +5,11 @@ services:
       image: repo.domain.com:5050/project/myapp:production
       restart: always
       command: yarn start
-      networks:
-         - traefik-network
+      logging:
+         driver: "json-file"
+         options:
+            max-size: "10m"
+            max-file: "1"
       deploy:
          mode: replicated
          replicas: 2
@@ -39,6 +42,8 @@ services:
 
          # Middleware for https
          - "traefik.http.routers.app-production.middlewares=default-middlewares@file"
+      networks:
+         - traefik-network
 
 networks:
    traefik-network:

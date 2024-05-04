@@ -1,7 +1,8 @@
 # Nodejs Based Microservices
 
-- Using docker : Seperate directory services for runing each docker service
-- Using Traefik for domain proxy, ex : auth.domain.com, user.domain.com
+## Prerequisite
+
+- Install docker : https://docs.docker.com/engine/install/ <!-- markdownlint-disable MD034 -->
 
 ## Tech and Packages we use in this project
 
@@ -24,25 +25,32 @@
 
 ## Local development
 
--- Monolith
+- Set Terminal VSCode to git bash
+  
+- Start Monolith
 
 ```shell
-docker compose -f docker-compose.prerequisite.yml up -d --force-recreate
-docker compose -f docker-compose.dev.mono.yml up -d --force-recreate
+./start-mono.sh
 ```
 
 - http://localhost:5000 <!-- markdownlint-disable MD034 -->
 
--- Microservices
+======== OR ========
+
+- Start Microservices
 
 ```shell
-docker compose -f docker-compose.prerequisite.yml up -d --force-recreate
-./exec-build-micro.sh
-docker compose -f docker-compose.dev.micro.yml up -d --force-recreate
+./start-micro.sh
 ```
 
 - http://localhost:5000 (API Gateway)
 - http://localhost:500X (Sevices)
+
+## On Production
+
+- Init docker to docker swarm
+- Using Traefik for domain proxy, ex : auth.domain.com, user.domain.com
+- Link Traefik : https://github.com/rendyproklamanta/docker-swarm-traefik
 
 ## Microservices Flow
 

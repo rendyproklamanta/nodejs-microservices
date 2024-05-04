@@ -32,13 +32,13 @@ router.post(`${ENDPOINT}/method/local`,
    (req, res) => {
       if (req.user.success) {
          res.cookie("refreshToken", req.user.data.refreshToken, {
-            maxAge: req.user.data.maxAge * 1000,
+            maxAge: req.user.data.maxAge * 1000, // convert to ms
             httpOnly: true,
             sameSite: true,
             secure: false
          });
          res.cookie("accessToken", req.user.data.accessToken, {
-            maxAge: req.user.data.accessTokenExpire * 1000,
+            maxAge: req.user.data.accessTokenExpire * 1000, // convert to ms
             httpOnly: true,
             sameSite: true,
             secure: false

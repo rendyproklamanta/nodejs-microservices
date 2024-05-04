@@ -29,10 +29,30 @@ const expressMiddleware = (app, express) => {
    app.use(morgan('combined'));
    app.use(bodyParser.json());
 
+   // Error handling middleware
+   process.on('uncaughtException', (err) => {
+      console.error('Uncaught exception:', err.stack);
+
+      // Send email to developers
+      const mailOptions = {
+         from: 'your-email@gmail.com',
+         to: 'developer1@example.com, developer2@example.com',
+         subject: 'Uncaught exception occurred in the application',
+         text: `An uncaught exception occurred in the application:\n\n${err.stack}`
+      };
+
+      console.log("🚀 ~ process.on ~ mailOptions:", mailOptions);
+   });
+
+   // Allow the following IPs
+   if (process.env.NODE_ENV === 'production') {
+      const ips = ['127.0.0.1'];
+      app.use(IpFilter(ips, { mode: 'allow' }));
+   }
+
    // Custom middleware to escape HTML in request body parameters
    const escapeHtmlMiddleware = (req, res, next) => {
       if (req.body) {
-         // Escape HTML in request body parameters
          for (const key in req.body) {
             if (typeof req.body[key] === 'string') {
                req.body[key] = escapeHtml(req.body[key]);
@@ -71,18 +91,6 @@ const expressMiddleware = (app, express) => {
       console.log('Timestamp:', timestamp);
       console.log(`=======================================================`);
       next();
-   });
-
-   // Allow the following IPs
-   if (process.env.NODE_ENV === 'production') {
-      const ips = ['127.0.0.1'];
-      app.use(IpFilter(ips, { mode: 'allow' }));
-   }
-
-   // Use express's default error handling middleware
-   app.use((err, req, res, next) => {
-      if (res.headersSent) return next(err);
-      res.status(400).send({ message: err.message });
    });
 
    app.get('/healthz/status', (req, res) => {
