@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import { correlationId, sendQueue } from '@config/broker.js';
 import { encrypt } from '@config/encryption.js';
-import { QUEUE_USER_CREATE, QUEUE_USER_LOGIN } from '@config/queue/userQueue.js';
+import { QUEUE_USER_CREATE, QUEUE_USER_GET, QUEUE_USER_LOGIN } from '@config/queue/userQueue.js';
 import { authConsumer } from '../brokers/consumer/auth.consumer.js';
 import getToken from '../../../config/utils/getToken.js';
 import { generateTokenJwt } from '../utils/generateTokenJwt.js';
@@ -72,8 +72,42 @@ const tokenData = async (req, res, next) => {
    }
 };
 
+// ! ==========================================
+// ! Controller
+// ! ==========================================
+const getAuthInfo = async (req, res, next) => {
+   try {
+      const replyId = correlationId(); // is unique
+
+      let payload;
+      let queue;
+      let queueReply;
+
+      // Get token
+      const token = await getToken(req);
+      payload = token;
+      queue = QUEUE_AUTH_READ_TOKEN_JWT;
+      queueReply = QUEUE_AUTH_READ_TOKEN_JWT + replyId;
+      const resToken = await sendQueue(queue, payload, replyId, queueReply);
+
+      // Get user by ID
+      payload = resToken.data._id;
+      queue = QUEUE_USER_GET;
+      queueReply = QUEUE_USER_GET + replyId;
+      const resUser = await sendQueue(queue, payload, replyId, queueReply);
+
+      return res.send(resUser);
+   } catch (err) {
+      return res.status(401).send({
+         success: false,
+         message: 'Get Token Error',
+      });
+   }
+};
+
 export {
    testCreateUserFromAuth,
    logout,
    tokenData,
+   getAuthInfo
 };

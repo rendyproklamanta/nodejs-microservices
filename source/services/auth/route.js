@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { logout, tokenData, testCreateUserFromAuth } from '@services/auth/controllers/auth.controller.js';
+import { logout, tokenData, testCreateUserFromAuth, getAuthInfo } from '@services/auth/controllers/auth.controller.js';
 import { authCreateSchema } from '@services/auth/middlewares/auth.validator.js';
 import { validate } from '@config/validate.js';
 import { isAuthMiddleware } from '@root/config/middlewares/isAuthMiddleware.js';
@@ -82,6 +82,12 @@ router.get(`${ENDPOINT}/token/refresh`,
 // get
 router.get(`${ENDPOINT}/test/mq`,
    testCreateUserFromAuth, // controller
+);
+
+// get
+router.get(`${ENDPOINT}/info`,
+   isAuthMiddleware, // middleware
+   getAuthInfo, // controller
 );
 
 

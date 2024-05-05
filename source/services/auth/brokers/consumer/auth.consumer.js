@@ -21,7 +21,6 @@ const authConsumer = async () => {
          },
       );
 
-
       // Login
       await channel.assertQueue(QUEUE_AUTH_READ_TOKEN_JWT);
       channel.consume(

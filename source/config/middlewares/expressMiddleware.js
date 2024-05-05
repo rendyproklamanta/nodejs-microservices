@@ -9,6 +9,7 @@ import connectDB from "@config/db.js";
 import { IpFilter } from 'express-ipfilter';
 import { rateLimit } from 'express-rate-limit';
 import escapeHtml from 'escape-html';
+import { errorMiddleware } from './errorMiddleware.js';
 
 const expressMiddleware = (app, express) => {
    connectDB();
@@ -30,19 +31,7 @@ const expressMiddleware = (app, express) => {
    app.use(bodyParser.json());
 
    // Error handling middleware
-   process.on('uncaughtException', (err) => {
-      console.error('Uncaught exception:', err.stack);
-
-      // Send email to developers
-      const mailOptions = {
-         from: 'your-email@gmail.com',
-         to: 'developer1@example.com, developer2@example.com',
-         subject: 'Uncaught exception occurred in the application',
-         text: `An uncaught exception occurred in the application:\n\n${err.stack}`
-      };
-
-      console.log("🚀 ~ process.on ~ mailOptions:", mailOptions);
-   });
+   errorMiddleware();
 
    // Allow the following IPs
    if (process.env.NODE_ENV === 'production') {

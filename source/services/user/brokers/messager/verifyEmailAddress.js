@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import { generateTokenJwt } from "@root/services/auth/utils/generateTokenJwt.js";
 import UserModel from "../../models/user.model.js";
-import { sendEmail } from "@root/services/notification/brokers/messager/sendEmail.js";
+import { sendEmail } from "@root/services/notification/brokers/messager/sendEmailSmtp.js";
 
 export const verifyEmailAddress = async (req, res) => {
    const isAdded = await UserModel.findOne({ email: req.body.email });

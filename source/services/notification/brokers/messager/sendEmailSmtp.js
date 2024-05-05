@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import { createTransport } from 'nodemailer';
 
-const sendEmail = (body, res, message) => {
+const sendEmailSmtp = (body, res, message) => {
    const transporter = createTransport({
       host: process.env.HOST,
       service: process.env.SERVICE, //comment this line if you use custom server/domain
@@ -44,5 +44,5 @@ const sendEmail = (body, res, message) => {
 };
 
 export {
-   sendEmail,
+   sendEmailSmtp,
 };
