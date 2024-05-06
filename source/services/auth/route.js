@@ -52,6 +52,9 @@ router.post(`${ENDPOINT}/method/local`,
          res.clearCookie("accessToken");
       }
 
+      // delete response data for security purpose
+      delete req.user.data;
+
       return res.send(req.user);
    }
 );

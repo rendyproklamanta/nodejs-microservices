@@ -34,7 +34,7 @@ const expressMiddleware = (app, express) => {
    app.use(bodyParser.json());
 
    // Error handling middleware
-   errorMiddleware();
+   // errorMiddleware(); //hide
 
    // Allow the following IPs
    if (process.env.NODE_ENV === 'production') {

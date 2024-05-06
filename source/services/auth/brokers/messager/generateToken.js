@@ -8,7 +8,7 @@ export const generateTokenMsg = async (data, msg, queue) => {
       process.env.JWT_SECRET,
       {
          // expiresIn: '365d',
-         expiresIn: data?.expiresIn ?? '1m',
+         expiresIn: data?.expiresIn ?? 60,
       }
    );
 

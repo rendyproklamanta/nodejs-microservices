@@ -40,19 +40,17 @@ passport.use(new LocalStrategy({
 
          // ----- Generate Access Token -----
          const token = {
-            ...resLogin.data,
+            _id: resLogin?.data?._id
          };
-         delete token.password; // remove password for generate token
+         // delete token.password; // remove password for generate token
 
-         const refreshTokenRemembermeDay = '30d';
-         const refreshTokenExpiryDay = '1d';
-         const refreshTokenExpirySec = 86400; // refreshToken time in seconds
-         const accessTokenExpirySec = 600; // accessToken time in seconds
-         const remembermeSec = 31536000; // seconds
+         const accessTokenExpiry = 10;
+         const refreshTokenExpiry = 86400; // refreshToken time in seconds
+         const refreshTokenRememberMe = 31536000; // seconds
 
          const payloadAccessToken = {
             token,
-            expiresIn: '1d'
+            expiresIn: accessTokenExpiry
          };
 
          const accessToken = await generateTokenJwt(payloadAccessToken);
@@ -60,11 +58,11 @@ passport.use(new LocalStrategy({
          // ----- Generate Refresh Token -----
          const payloadRefreshToken = {
             token,
-            expiresIn: rememberMe ? refreshTokenRemembermeDay : refreshTokenExpiryDay
+            expiresIn: rememberMe ? refreshTokenRememberMe : refreshTokenExpiry
          };
 
          const refreshToken = await generateTokenJwt(payloadRefreshToken);
-         const encryptRefreshToken = encrypt(refreshToken);
+         const encryptRefreshToken = encrypt(refreshToken.data);
 
          // ----- Result -----
          success = true;
@@ -75,12 +73,12 @@ passport.use(new LocalStrategy({
             data: {
                accessToken: accessToken.data,
                refreshToken: encryptRefreshToken,
-               _id: resLogin?.data?._id,
-               role: resLogin?.data?.role,
-               name: resLogin?.data?.name,
-               username: resLogin?.data?.username,
-               accessTokenExpiry: accessTokenExpirySec,
-               refreshTokenExpiry: rememberMe ? remembermeSec : refreshTokenExpirySec,
+               // _id: resLogin?.data?._id,
+               // role: resLogin?.data?.role,
+               // name: resLogin?.data?.name,
+               // username: resLogin?.data?.username,
+               accessTokenExpiry: accessTokenExpiry,
+               refreshTokenExpiry: rememberMe ? refreshTokenRememberMe : refreshTokenExpiry,
             },
          };
 
