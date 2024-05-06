@@ -4,16 +4,20 @@ const { Schema, models, model } = mongoose;
 
 const schema = new Schema(
    {
-      id: {
+      token: {
          type: String,
          trim: true,
       },
-      username: {
+      title: {
          type: String,
          trim: true,
       },
-      action: {
+      message: {
          type: String,
+         trim: true,
+      },
+      options: {
+         type: Schema.Types.Mixed,
          trim: true,
       },
    },
@@ -23,6 +27,6 @@ const schema = new Schema(
 );
 
 
-const LoggerModel = models.Logger || model('Logger', schema);
+const LogPushNotifModel = models.LogPushNotif || model('LogPushNotif', schema);
 
-export default LoggerModel;
+export default LogPushNotifModel;

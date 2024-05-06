@@ -9,6 +9,11 @@ import { isApiKey } from '@config/middlewares/isApiKey.js';
 import emailVerificationLimit from '@root/services/auth/utils/emailVerificationLimit.js';
 import passwordVerificationLimit from '@root/services/auth/utils/passwordVerificationLimit.js';
 import { isAuthMiddleware } from '@root/config/middlewares/isAuthMiddleware.js';
+import { userConsumer } from './brokers/consumer/user.consumer.js';
+
+(async () => {
+   await userConsumer();
+})();
 
 const router = Router();
 const ENDPOINT = '/api/users';

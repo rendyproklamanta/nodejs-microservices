@@ -30,7 +30,7 @@ export const refreshToken = async (req, res, next) => {
          success: true,
          data: {
             accessToken: accessToken.data,
-            accessTokenExpire: tokenExpireTime,
+            accessTokenExpiry: tokenExpireTime,
          }
       });
    } catch (error) {

@@ -1,11 +1,7 @@
 import { correlationId, sendQueue } from '@config/broker.js';
-import { userConsumer } from '../brokers/consumer/user.consumer.js';
 import { QUEUE_USER_CREATE, QUEUE_USER_DELETE, QUEUE_USER_GET_ALL, QUEUE_USER_GET, QUEUE_USER_UPDATE, QUEUE_USER_VERIFY_EMAIL, QUEUE_USER_FORGET_PASSWORD, QUEUE_USER_RESET_PASSWORD, QUEUE_USER_CHANGE_PASSWORD, QUEUE_USER_SIGNUP_PROVIDER, QUEUE_USER_GENERATE_DUMMY } from '@root/config/queue/userQueue.js';
 import responseCustom from '@root/config/utils/responseCustom.js';
 
-(async () => {
-   await userConsumer();
-})();
 
 // ! ==========================================
 // ! Controller

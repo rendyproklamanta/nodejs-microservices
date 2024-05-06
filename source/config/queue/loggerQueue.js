@@ -1,0 +1,5 @@
+// Message Broker
+export const QUEUE_LOGGER_MAIL = 'QUEUE_LOGGER_MAIL';
+export const QUEUE_LOGGER_API = 'QUEUE_LOGGER_API';
+export const QUEUE_LOGGER_USER = 'QUEUE_LOGGER_USER';
+

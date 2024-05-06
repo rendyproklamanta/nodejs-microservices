@@ -1,17 +1,10 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import { correlationId, sendQueue } from '@config/broker.js';
-import { encrypt } from '@config/encryption.js';
-import { QUEUE_USER_CREATE, QUEUE_USER_GET, QUEUE_USER_LOGIN } from '@config/queue/userQueue.js';
-import { authConsumer } from '../brokers/consumer/auth.consumer.js';
+import { QUEUE_USER_CREATE, QUEUE_USER_GET } from '@config/queue/userQueue.js';
 import getToken from '../../../config/utils/getToken.js';
-import { generateTokenJwt } from '../utils/generateTokenJwt.js';
 import { QUEUE_AUTH_READ_TOKEN_JWT } from '@root/config/queue/authQueue.js';
 import responseCustom from '@root/config/utils/responseCustom.js';
-
-(async () => {
-   await authConsumer();
-})();
 
 const testCreateUserFromAuth = async (req, res) => {
    try {

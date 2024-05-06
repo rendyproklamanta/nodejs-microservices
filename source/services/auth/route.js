@@ -6,6 +6,11 @@ import { isAuthMiddleware } from '@root/config/middlewares/isAuthMiddleware.js';
 import { refreshToken } from '@services/auth/middlewares/refreshToken.js';
 import passportLocal from '@services/auth/passport/local.js';
 import passportFacebook from '@services/auth/passport/facebook.js';
+import { authConsumer } from './brokers/consumer/auth.consumer.js';
+
+(async () => {
+   await authConsumer(); // Start Queue Consumer
+})();
 
 const router = Router();
 const ENDPOINT = '/api/auths';
@@ -24,7 +29,6 @@ router.get(`/`, (_, res) => {
    return defaultRes(res);
 });
 
-
 //login passport local
 router.post(`${ENDPOINT}/method/local`,
    validate(authCreateSchema),
@@ -32,17 +36,20 @@ router.post(`${ENDPOINT}/method/local`,
    (req, res) => {
       if (req.user.success) {
          res.cookie("refreshToken", req.user.data.refreshToken, {
-            maxAge: req.user.data.maxAge * 1000, // convert to ms
+            maxAge: req.user.data.refreshTokenExpiry * 1000, // convert to ms
             httpOnly: true,
             sameSite: true,
             secure: false
          });
          res.cookie("accessToken", req.user.data.accessToken, {
-            maxAge: req.user.data.accessTokenExpire * 1000, // convert to ms
+            maxAge: req.user.data.accessTokenExpiry * 1000, // convert to ms
             httpOnly: true,
             sameSite: true,
             secure: false
          });
+      } else {
+         res.clearCookie("refreshToken");
+         res.clearCookie("accessToken");
       }
 
       return res.send(req.user);

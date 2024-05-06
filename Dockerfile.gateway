@@ -21,8 +21,7 @@ COPY ./source/services/gateway ./services/gateway
 COPY ./source/index/index.gateway.js ./index.gateway.js
 
 # Install Yarn
-RUN npm install -g yarn --force
-RUN yarn
+RUN yarn install --production
 
 EXPOSE 5000
 

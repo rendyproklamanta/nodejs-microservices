@@ -1,4 +1,4 @@
-FROM public.ecr.aws/docker/library/node:20-alpine AS base
+FROM public.ecr.aws/docker/library/node:20-alpine
 
 # Install apk alpine
 RUN apk --update --no-cache add curl tzdata
@@ -6,25 +6,25 @@ RUN apk --update --no-cache add curl tzdata
 # Set Timezone
 RUN ln -sf /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
 
+WORKDIR /app
+
 RUN mkdir -p /app && chown -R node:node /app
 ENV PATH /app/node_modules/.bin:$PATH
 
-WORKDIR /app
+# ---- Dependencies ----
+COPY ./source/package.json .
+COPY ./source/yarn.lock .
+RUN yarn install --production
 
+# ---- Copy files to container ----
 COPY ./source .
 COPY ./source/index/index.js index.js
 
-# ---- Dependencies ----
-FROM base AS dependencies
-RUN yarn install
-
 # ---- Test ----
-FROM base AS test
 RUN NODE_OPTIONS='--experimental-vm-modules' jest healthcheck.test.js --force-exit
 
-# ---- Release ----
-FROM base AS release
-HEALTHCHECK --interval=5m --timeout=3s --retries=3 --start-interval=10s \
+# ---- HealthCheck ----
+HEALTHCHECK --interval=10m --timeout=3s --retries=3 --start-interval=10s \
   CMD curl -f http://localhost:5000/healthz/status || exit 1
 
 EXPOSE 5000

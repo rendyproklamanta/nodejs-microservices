@@ -39,7 +39,7 @@ const correlationId = () => {
 };
 
 
-const sendQueue = async (queue, payload, replyId = null, queueReply = null) => {
+const sendQueue = async (queue, payload, replyId = '', queueReply = '') => {
    try {
       if (replyId && queueReply) {
          await channel.assertQueue(queue);
@@ -64,8 +64,8 @@ const sendQueue = async (queue, payload, replyId = null, queueReply = null) => {
       } else {
          await channel.assertQueue(queue);
          channel.sendToQueue(queue, Buffer.from(JSON.stringify(payload)));
-         console.log(`[=>>] Sent ${queue} :`, payload);
       }
+      console.log(`[=>>] Sent ${queue} :`, payload);
    } catch (err) {
       console.warn(err);
    }

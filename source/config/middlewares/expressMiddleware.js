@@ -10,6 +10,9 @@ import { IpFilter } from 'express-ipfilter';
 import { rateLimit } from 'express-rate-limit';
 import escapeHtml from 'escape-html';
 import { errorMiddleware } from './errorMiddleware.js';
+import { sendQueue } from '../broker.js';
+import { QUEUE_LOGGER_API } from '../queue/loggerQueue.js';
+import ipWhitelist from '../utils/ipWhitelist.js';
 
 const expressMiddleware = (app, express) => {
    connectDB();
@@ -35,8 +38,7 @@ const expressMiddleware = (app, express) => {
 
    // Allow the following IPs
    if (process.env.NODE_ENV === 'production') {
-      const ips = ['127.0.0.1'];
-      app.use(IpFilter(ips, { mode: 'allow' }));
+      app.use(IpFilter(ipWhitelist, { mode: 'allow' }));
    }
 
    // Custom middleware to escape HTML in request body parameters
@@ -68,20 +70,27 @@ const expressMiddleware = (app, express) => {
    app.use(limiter);
 
    // Middleware function to log endpoint, IP address, and timestamp
-   app.use((req, res, next) => {
-      const timestamp = new Date().toISOString();
+   app.use(async (req, res, next) => {
+      // const timestamp = new Date().toISOString();
 
-      console.log(`=======================================================`);
-      console.log(`Method: ${req.method} ${req.url}`);
-      console.log('Query Parameters:', req.query);
-      console.log('Request Body:', req.body);
-      console.log('Headers:', req.headers);
-      console.log('IP Address:', req.ip);
-      console.log('Timestamp:', timestamp);
-      console.log(`=======================================================`);
+      // send to logger
+      const payload = {
+         ip: req.ip,
+         method: req.method,
+         url: req.url,
+         query: req.query,
+         body: req.body,
+         headers: req.headers,
+      };
+      //console.log("🚀 ~ logger ~ payload:", payload);
+
+      const queue = QUEUE_LOGGER_API;
+      await sendQueue(queue, payload);
+
       next();
    });
 
+   // HealthCheck
    app.get('/healthz/status', (req, res) => {
       return res.send({ status: 'up' });
    });

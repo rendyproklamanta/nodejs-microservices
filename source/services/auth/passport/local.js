@@ -4,84 +4,112 @@ import { correlationId, sendQueue } from '@root/config/broker.js';
 import { QUEUE_USER_LOGIN } from '@root/config/queue/userQueue.js';
 import { generateTokenJwt } from '../utils/generateTokenJwt.js';
 import { encrypt } from '@root/config/encryption.js';
+import { QUEUE_LOGGER_USER } from '@root/config/queue/loggerQueue.js';
 
 passport.use(new LocalStrategy({
    usernameField: 'username',
    passwordField: 'password',
    passReqToCallback: true
 }, async (req, username, password, done) => {
+
    const code = 0;
    const rememberMe = req.body.rememberMe;
+   let queue = '';
+   let queueReply = '';
+   let result = '';
+   let resLogin = '';
+   let success = '';
 
    try {
 
-      // get user by email
+      // get user payload
       const payload = {
          username: username,
          password: password,
       };
 
       const replyId = correlationId();
-      const queue = QUEUE_USER_LOGIN;
-      const queueReply = QUEUE_USER_LOGIN + replyId;
-      const result = await sendQueue(queue, payload, replyId, queueReply);
+      queue = QUEUE_USER_LOGIN;
+      queueReply = QUEUE_USER_LOGIN + replyId;
+      resLogin = await sendQueue(queue, payload, replyId, queueReply);
 
-      if (!result.success) {
-         return done(null, result);
+      if (!resLogin.success) {
+         success = false;
+         result = resLogin;
+      } else {
+
+         // ----- Generate Access Token -----
+         const token = {
+            ...resLogin.data,
+         };
+         delete token.password; // remove password for generate token
+
+         const refreshTokenRemembermeDay = '30d';
+         const refreshTokenExpiryDay = '1d';
+         const refreshTokenExpirySec = 86400; // refreshToken time in seconds
+         const accessTokenExpirySec = 600; // accessToken time in seconds
+         const remembermeSec = 31536000; // seconds
+
+         const payloadAccessToken = {
+            token,
+            expiresIn: '1d'
+         };
+
+         const accessToken = await generateTokenJwt(payloadAccessToken);
+
+         // ----- Generate Refresh Token -----
+         const payloadRefreshToken = {
+            token,
+            expiresIn: rememberMe ? refreshTokenRemembermeDay : refreshTokenExpiryDay
+         };
+
+         const refreshToken = await generateTokenJwt(payloadRefreshToken);
+         const encryptRefreshToken = encrypt(refreshToken);
+
+         // ----- Result -----
+         success = true;
+         const resData = {
+            message: 'Login success',
+            code: code,
+            success,
+            data: {
+               accessToken: accessToken.data,
+               refreshToken: encryptRefreshToken,
+               _id: resLogin?.data?._id,
+               role: resLogin?.data?.role,
+               name: resLogin?.data?.name,
+               username: resLogin?.data?.username,
+               accessTokenExpiry: accessTokenExpirySec,
+               refreshTokenExpiry: rememberMe ? remembermeSec : refreshTokenExpirySec,
+            },
+         };
+
+         result = resData;
       }
 
-      // Generate Token
-      const token = {
-         ...result.data,
-      };
-      delete token.password; // remove password for generate token
-
-      const tokenRemembermeDay = '30d';
-      const tokenExpireDay = '1d';
-      const tokenExpireTime = 86400; //seconds
-      const maxAge = 600; // seconds
-      const remembermeTime = 31536000; // seconds
-
-      const payloadAccessToken = {
-         token,
-         expiresIn: '1d'
-      };
-
-      const accessToken = await generateTokenJwt(payloadAccessToken);
-
-      const payloadRefreshToken = {
-         token,
-         expiresIn: rememberMe ? tokenRemembermeDay : tokenExpireDay
-      };
-
-      const refreshToken = await generateTokenJwt(payloadRefreshToken);
-      const encryptRefreshToken = encrypt(refreshToken);
-
-      const resData = {
-         message: 'Login success',
-         code: code,
-         success: true,
-         data: {
-            accessToken: accessToken.data,
-            refreshToken: encryptRefreshToken,
-            _id: result.data._id,
-            role: result.data.role,
-            name: result.data.name,
-            username: result.data.username,
-            accessTokenExpire: tokenExpireTime,
-            maxAge: rememberMe ? remembermeTime : maxAge,
-         },
-      };
-
-      return done(null, resData);
-
    } catch (error) {
+      success = false;
       const errors = {
-         success: false,
+         success,
          message: error.message,
       };
-      return done(null, errors);
+      result = errors;
    }
+
+   // ----- Send to logger -----
+   const payloadLogUser = {
+      action: 'USER_LOGGED_IN',
+      userId: resLogin?.data?._id,
+      success,
+      data: result,
+   };
+
+   queue = QUEUE_LOGGER_USER;
+   await sendQueue(queue, payloadLogUser);
+
+   // ----- Return result -----
+   return done(null, result);
+
 })
 );
 

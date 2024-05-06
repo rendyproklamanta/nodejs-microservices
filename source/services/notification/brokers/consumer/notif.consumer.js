@@ -4,7 +4,7 @@ import { QUEUE_NOTIFICATION_ZEPTO } from '@root/config/queue/notificationQueue.j
 
 let channel;
 
-const userConsumer = async () => {
+const notificationConsumer = async () => {
    channel = await createChannel();
 
    try {
@@ -28,5 +28,5 @@ const userConsumer = async () => {
 };
 
 export {
-   userConsumer,
+   notificationConsumer,
 };
