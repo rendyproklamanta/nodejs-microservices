@@ -3,6 +3,8 @@ dotenv.config();
 import { decrypt } from "@root/config/encryption.js";
 import { generateTokenJwt } from "../utils/generateTokenJwt.js";
 import jwt from 'jsonwebtoken';
+import { sendQueue } from '@root/config/broker.js';
+import { QUEUE_AUTH_SAVE_TOKEN_JWT } from '@root/config/queue/authQueue.js';
 
 export const refreshToken = async (req, res, next) => {
    try {
@@ -24,7 +26,9 @@ export const refreshToken = async (req, res, next) => {
       const decryptToken = decrypt(refreshToken);
       const decoded = jwt.verify(decryptToken, process.env.JWT_SECRET);
 
+      const currentDate = new Date();
       const accessTokenExpiry = 10;
+
       const token = {
          _id: decoded._id
       };
@@ -35,21 +39,36 @@ export const refreshToken = async (req, res, next) => {
       };
 
       const accessToken = await generateTokenJwt(payload);
-      const tokenExpireTime = 86400;
 
-      res.cookie("accessToken", accessToken.data, {
-         maxAge: 10 * 1000, // convert to ms
-         httpOnly: true,
-         sameSite: true,
-         secure: false
-      });
+      // ----- Save Token -----
+      const payloadSaveToken = {
+         userId: decoded._id,
+         accessToken: accessToken.data,
+         accessTokenExpiresAt: new Date(currentDate.getTime() + (accessTokenExpiry * 1000)),
+      };
 
-      // res.header('Authorization', accessToken).send(decoded.user);
+      const queue = QUEUE_AUTH_SAVE_TOKEN_JWT;
+      const resSaveToken = await sendQueue(queue, payloadSaveToken);
+
+      if (!resSaveToken.success) {
+         return res.status(500).send({
+            success: false,
+            resSaveToken
+         });
+      }
+
+      // res.cookie("accessToken", accessToken.data, {
+      //    maxAge: 10 * 1000, // convert to ms
+      //    httpOnly: true,
+      //    sameSite: true,
+      //    secure: false
+      // });
+
       return res.status(200).send({
          success: true,
          data: {
             accessToken: accessToken.data,
-            accessTokenExpiry: tokenExpireTime,
+            accessTokenExpiry: accessTokenExpiry,
          }
       });
    } catch (error) {

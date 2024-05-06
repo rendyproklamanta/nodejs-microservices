@@ -5,6 +5,7 @@ import { QUEUE_USER_LOGIN } from '@root/config/queue/userQueue.js';
 import { generateTokenJwt } from '../utils/generateTokenJwt.js';
 import { encrypt } from '@root/config/encryption.js';
 import { QUEUE_LOGGER_USER } from '@root/config/queue/loggerQueue.js';
+import { QUEUE_AUTH_SAVE_TOKEN_JWT } from '@root/config/queue/authQueue.js';
 
 passport.use(new LocalStrategy({
    usernameField: 'username',
@@ -14,6 +15,8 @@ passport.use(new LocalStrategy({
 
    const code = 0;
    const rememberMe = req.body.rememberMe;
+   const replyId = correlationId();
+   
    let queue = '';
    let queueReply = '';
    let result = '';
@@ -28,7 +31,6 @@ passport.use(new LocalStrategy({
          password: password,
       };
 
-      const replyId = correlationId();
       queue = QUEUE_USER_LOGIN;
       queueReply = QUEUE_USER_LOGIN + replyId;
       resLogin = await sendQueue(queue, payload, replyId, queueReply);
@@ -44,6 +46,7 @@ passport.use(new LocalStrategy({
          };
          // delete token.password; // remove password for generate token
 
+         const currentDate = new Date();
          const accessTokenExpiry = 10;
          const refreshTokenExpiry = 86400; // refreshToken time in seconds
          const refreshTokenRememberMe = 31536000; // seconds
@@ -64,25 +67,43 @@ passport.use(new LocalStrategy({
          const refreshToken = await generateTokenJwt(payloadRefreshToken);
          const encryptRefreshToken = encrypt(refreshToken.data);
 
-         // ----- Result -----
-         success = true;
-         const resData = {
-            message: 'Login success',
-            code: code,
-            success,
-            data: {
-               accessToken: accessToken.data,
-               refreshToken: encryptRefreshToken,
-               // _id: resLogin?.data?._id,
-               // role: resLogin?.data?.role,
-               // name: resLogin?.data?.name,
-               // username: resLogin?.data?.username,
-               accessTokenExpiry: accessTokenExpiry,
-               refreshTokenExpiry: rememberMe ? refreshTokenRememberMe : refreshTokenExpiry,
-            },
+         // ----- Save Token -----
+         const payloadSaveToken = {
+            userId: resLogin?.data?._id,
+            accessToken: accessToken.data,
+            refreshToken: encryptRefreshToken,
+            accessTokenExpiresAt: new Date(currentDate.getTime() + (accessTokenExpiry * 1000)),
+            refreshTokenExpiresAt: new Date(currentDate.getTime() + (refreshTokenExpiry * 1000)),
          };
 
-         result = resData;
+         queue = QUEUE_AUTH_SAVE_TOKEN_JWT;
+         queueReply = QUEUE_AUTH_SAVE_TOKEN_JWT + replyId;
+         const resSaveToken = await sendQueue(queue, payloadSaveToken, replyId, queueReply);
+
+         if (!resSaveToken.success) {
+            success = false;
+            result = resSaveToken;
+         } else {
+            // ----- Result -----
+            success = true;
+            const resData = {
+               message: 'Login success',
+               code: code,
+               success,
+               data: {
+                  accessToken: accessToken.data,
+                  refreshToken: encryptRefreshToken,
+                  // _id: resLogin?.data?._id,
+                  // role: resLogin?.data?.role,
+                  // name: resLogin?.data?.name,
+                  // username: resLogin?.data?.username,
+                  accessTokenExpiry: accessTokenExpiry,
+                  refreshTokenExpiry: rememberMe ? refreshTokenRememberMe : refreshTokenExpiry,
+               },
+            };
+
+            result = resData;
+         }
       }
 
    } catch (error) {
