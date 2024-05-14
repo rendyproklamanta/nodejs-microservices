@@ -1,10 +1,8 @@
 import { sendReply } from "@root/config/broker.js";
 import AuthModel from "../../models/auth.model.js";
 
+// QUEUE_AUTH_SAVE_TOKEN_JWT
 export const saveTokenMsg = async (payload, msg) => {
-   let success = false;
-   let data = '';
-
    try {
       // Define the update options
       const options = {
@@ -13,18 +11,18 @@ export const saveTokenMsg = async (payload, msg) => {
       };
 
       const saveToken = await AuthModel.findOneAndUpdate({ userId: payload.userId }, payload, options);
-      //console.log("🚀 ~ saveTokenMsg ~ saveToken:", saveToken);
       if (saveToken) {
-         success = true;
+         sendReply(msg, {
+            success: true,
+            data: payload,
+         });
       }
-      data = payload;
    } catch (error) {
       console.log("🚀 ~ saveTokenMsg ~ error:", error);
-      data = error;
+      sendReply(msg, {
+         success: false,
+         error: error,
+      });
    }
 
-   sendReply(msg, {
-      success,
-      data,
-   });
 };
