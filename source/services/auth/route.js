@@ -41,19 +41,19 @@ router.post(`${ENDPOINT}/method/local`,
             sameSite: true,
             secure: false
          });
-         res.cookie("accessToken", req.user.data.accessToken, {
-            maxAge: req.user.data.accessTokenExpiry * 1000, // convert to ms
-            httpOnly: true,
-            sameSite: true,
-            secure: false
-         });
+         // res.cookie("accessToken", req.user.data.accessToken, {
+         //    maxAge: req.user.data.accessTokenExpiry * 1000, // convert to ms
+         //    httpOnly: true,
+         //    sameSite: true,
+         //    secure: false
+         // });
       } else {
          res.clearCookie("refreshToken");
          res.clearCookie("accessToken");
       }
 
       // delete response data for security purpose
-      delete req.user.data;
+      //delete req.user.data;
 
       return res.send(req.user);
    }
@@ -85,7 +85,7 @@ router.get(`${ENDPOINT}/token/data`,
 );
 
 //get
-router.get(`${ENDPOINT}/token/refresh`,
+router.post(`${ENDPOINT}/token/refresh`,
    refreshToken, // controller
 );
 

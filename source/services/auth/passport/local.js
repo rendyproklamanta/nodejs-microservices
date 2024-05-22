@@ -16,7 +16,7 @@ passport.use(new LocalStrategy({
    const code = 0;
    const rememberMe = req.body.rememberMe;
    const replyId = correlationId();
-   
+
    let queue = '';
    let queueReply = '';
    let result = '';
@@ -47,7 +47,7 @@ passport.use(new LocalStrategy({
          // delete token.password; // remove password for generate token
 
          const currentDate = new Date();
-         const accessTokenExpiry = 10;
+         const accessTokenExpiry = 3600; // 1 hour
          const refreshTokenExpiry = 86400; // refreshToken time in seconds
          const refreshTokenRememberMe = 31536000; // seconds
 

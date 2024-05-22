@@ -12,11 +12,13 @@ export const refreshToken = async (req, res, next) => {
       let refreshToken;
       let payload;
 
-      if (req.cookies.refreshToken) {
-         refreshToken = req.cookies.refreshToken;
-      } else {
-         refreshToken = req.body.refreshToken;
-      }
+      // if (req.cookies.refreshToken) {
+      //    refreshToken = req.cookies.refreshToken;
+      // } else {
+      //    refreshToken = req.body.refreshToken;
+      // }
+
+      refreshToken = req.body.refreshToken;
 
       if (!refreshToken) {
          return res.status(401).send({
@@ -28,7 +30,7 @@ export const refreshToken = async (req, res, next) => {
       const decryptToken = decrypt(refreshToken);
       const decoded = jwt.verify(decryptToken, process.env.JWT_SECRET);
       const currentDate = new Date();
-      const accessTokenExpiry = 10;
+      const accessTokenExpiry = 3600; // 1 hour
 
       const token = {
          _id: decoded._id
@@ -59,12 +61,12 @@ export const refreshToken = async (req, res, next) => {
          });
       }
 
-      res.cookie("accessToken", accessToken.data, {
-         maxAge: 10 * 1000, // convert to ms
-         httpOnly: true,
-         sameSite: true,
-         secure: false
-      });
+      // res.cookie("accessToken", accessToken.data, {
+      //    maxAge: 10 * 1000, // convert to ms
+      //    httpOnly: true,
+      //    sameSite: true,
+      //    secure: false
+      // });
 
       return res.status(200).send({
          success: true,
