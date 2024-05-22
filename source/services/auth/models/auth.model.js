@@ -8,6 +8,10 @@ const schema = new Schema(
          type: Schema.Types.ObjectId,
          required: true
       },
+      machineId: {
+         type: String,
+         required: true
+      },
       accessToken: {
          type: String,
          required: true

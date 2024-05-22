@@ -1,7 +1,8 @@
 FROM public.ecr.aws/docker/library/node:20-alpine
 
 # Install apk alpine
-RUN apk --update --no-cache add curl tzdata
+RUN apk --update --no-cache add curl tzdata python3 make g++
+RUN rm -rf /var/cache/apk/*
 
 # Set Timezone
 RUN ln -sf /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
@@ -24,7 +25,7 @@ COPY ./source/index/index.js index.js
 RUN NODE_OPTIONS='--experimental-vm-modules' jest healthcheck.test.js --force-exit
 
 # ---- HealthCheck ----
-HEALTHCHECK --interval=10m --timeout=3s --retries=3 --start-interval=10s \
+HEALTHCHECK --interval=10m --timeout=3s --retries=3 --start-interval=20s \
   CMD curl -f http://localhost:5000/healthz/status || exit 1
 
 EXPOSE 5000

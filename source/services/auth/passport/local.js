@@ -6,6 +6,7 @@ import { generateTokenJwt } from '../utils/generateTokenJwt.js';
 import { encrypt } from '@root/config/encryption.js';
 import { QUEUE_LOGGER_USER } from '@root/config/queue/loggerQueue.js';
 import { QUEUE_AUTH_SAVE_TOKEN_JWT } from '@root/config/queue/authQueue.js';
+import machineId from "node-machine-uid";
 
 passport.use(new LocalStrategy({
    usernameField: 'username',
@@ -41,8 +42,11 @@ passport.use(new LocalStrategy({
       } else {
 
          // ----- Generate Access Token -----
+         const machineUid = await machineId()
+
          const token = {
-            _id: resLogin?.data?._id
+            _id: resLogin?.data?._id,
+            machineId: machineUid
          };
          // delete token.password; // remove password for generate token
 
@@ -70,6 +74,7 @@ passport.use(new LocalStrategy({
          // ----- Save Token -----
          const payloadSaveToken = {
             userId: resLogin?.data?._id,
+            machineId: machineUid,
             accessToken: accessToken.data,
             refreshToken: encryptRefreshToken,
             accessTokenExpiresAt: new Date(currentDate.getTime() + (accessTokenExpiry * 1000)),

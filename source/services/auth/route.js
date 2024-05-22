@@ -35,12 +35,12 @@ router.post(`${ENDPOINT}/method/local`,
    passportLocal.authenticate('local', { session: false }),
    (req, res) => {
       if (req.user.success) {
-         res.cookie("refreshToken", req.user.data.refreshToken, {
-            maxAge: req.user.data.refreshTokenExpiry * 1000, // convert to ms
-            httpOnly: true,
-            sameSite: true,
-            secure: false
-         });
+         // res.cookie("refreshToken", req.user.data.refreshToken, {
+         //    maxAge: req.user.data.refreshTokenExpiry * 1000, // convert to ms
+         //    httpOnly: true,
+         //    sameSite: true,
+         //    secure: false
+         // });
          // res.cookie("accessToken", req.user.data.accessToken, {
          //    maxAge: req.user.data.accessTokenExpiry * 1000, // convert to ms
          //    httpOnly: true,

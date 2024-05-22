@@ -28,12 +28,13 @@ export const refreshToken = async (req, res, next) => {
       }
 
       const decryptToken = decrypt(refreshToken);
-      const decoded = jwt.verify(decryptToken, process.env.JWT_SECRET);
+      const decodedToken = jwt.verify(decryptToken, process.env.JWT_SECRET);
       const currentDate = new Date();
       const accessTokenExpiry = 3600; // 1 hour
 
       const token = {
-         _id: decoded._id
+         _id: decodedToken._id,
+         machineId: decodedToken.machineId
       };
 
       payload = {
@@ -45,7 +46,8 @@ export const refreshToken = async (req, res, next) => {
 
       // ----- Save Token -----
       payload = {
-         userId: decoded._id,
+         userId: decodedToken._id,
+         machineId: decodedToken.machineId,
          accessToken: accessToken.data,
          accessTokenExpiresAt: new Date(currentDate.getTime() + (accessTokenExpiry * 1000)),
       };
