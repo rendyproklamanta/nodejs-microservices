@@ -32,7 +32,7 @@ export const isAuthMiddleware = async (req, res, next) => {
             });
          }
       } else {
-         return res.send(result);
+         return res.status(401).send(result);
       }
 
    } catch (err) {

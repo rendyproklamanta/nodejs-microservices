@@ -96,14 +96,18 @@ passport.use(new LocalStrategy({
                code: code,
                success,
                data: {
-                  accessToken: accessToken.data,
-                  refreshToken: encryptRefreshToken,
-                  // _id: resLogin?.data?._id,
-                  // role: resLogin?.data?.role,
-                  // name: resLogin?.data?.name,
-                  // username: resLogin?.data?.username,
-                  accessTokenExpiry: accessTokenExpiry,
-                  refreshTokenExpiry: rememberMe ? refreshTokenRememberMe : refreshTokenExpiry,
+                  token: {
+                     accessToken: accessToken.data,
+                     refreshToken: encryptRefreshToken,
+                     accessTokenExpiry: accessTokenExpiry,
+                     refreshTokenExpiry: rememberMe ? refreshTokenRememberMe : refreshTokenExpiry,
+                  },
+                  userInfo: {
+                     _id: resLogin?.data?._id,
+                     role: resLogin?.data?.role,
+                     name: resLogin?.data?.name,
+                     username: resLogin?.data?.username,
+                  },
                },
             };
 
