@@ -10,6 +10,7 @@ export const refreshToken = async (req, res, next) => {
    try {
       const replyId = correlationId(); // is unique
       let refreshToken;
+      let refreshTokenDB;
       let payload;
 
       // if (req.cookies.refreshToken) {
@@ -19,6 +20,18 @@ export const refreshToken = async (req, res, next) => {
       // }
 
       refreshToken = req.body.refreshToken;
+      
+      // [TODO] 
+      // Get refresh token from database and compore to refreshToken
+      // 
+      
+      //refreshTokenDB = get from database where id 
+      if (refreshTokenDB !== refreshToken) {
+         return res.status(401).send({
+            status: false,
+            message: 'Access Denied. refresh token invalid.'
+         });
+      }
 
       if (!refreshToken) {
          return res.status(401).send({

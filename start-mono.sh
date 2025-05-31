@@ -7,4 +7,4 @@ docker compose -f docker-compose.prerequisite.yml up -d --force-recreate
 docker compose -f docker-compose.dev.mono.yml up -d --force-recreate $build_arg
 
 # Remove dangling
-docker rmi --force $(docker images -q --filter "dangling=true")
+#docker rmi --force $(docker images -q --filter "dangling=true")

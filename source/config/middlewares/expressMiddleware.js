@@ -10,12 +10,13 @@ import { IpFilter } from 'express-ipfilter';
 import { rateLimit } from 'express-rate-limit';
 import escapeHtml from 'escape-html';
 import { errorMiddleware } from './errorMiddleware.js';
-import { sendQueue } from '../broker.js';
+import { createChannel, sendQueue } from '../broker.js';
 import { QUEUE_LOGGER_API } from '../queue/loggerQueue.js';
 import ipWhitelist from '../utils/ipWhitelist.js';
 
 const expressMiddleware = (app, express) => {
-   connectDB();
+   connectDB(); // Connect to MongoDB
+   createChannel(); // Connect to RabbitMQ channel
 
    // We are using this for the express-rate-limit middleware
    // See: https://github.com/nfriedly/express-rate-limit
@@ -72,6 +73,7 @@ const expressMiddleware = (app, express) => {
    // Middleware function to log endpoint, IP address, and timestamp
    app.use(async (req, res, next) => {
       // const timestamp = new Date().toISOString();
+      await createChannel();
 
       // send to logger
       const payload = {

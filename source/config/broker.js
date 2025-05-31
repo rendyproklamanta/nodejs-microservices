@@ -4,6 +4,7 @@ import { connect } from 'amqplib';
 import { EventEmitter } from 'events';
 
 let channel, connection;
+
 async function createChannel() {
    const username = process.env.AMQP_USER;
    const password = process.env.AMQP_PASSWORD;
@@ -14,18 +15,19 @@ async function createChannel() {
 
    try {
       connection = await connect(connectionString, {
-         timeout: 10000,
+         timeout: 30000,
       });
       channel = await connection.createChannel();
       channel.responseEmitter = new EventEmitter();
 
+      console.log("🚀 ~ file: broker.js:12 ~ createChannel ~ CONNECTED");
       return channel;
    } catch (err) {
       console.log("🚀 ~ file: broker.js:12 ~ createChannel ~ err:", err);
       process.exit(1);
    }
 }
-createChannel();
+// createChannel();
 
 const optionsRabbitMq = {
    arguments: {
